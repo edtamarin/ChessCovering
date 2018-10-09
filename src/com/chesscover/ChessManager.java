@@ -2,6 +2,7 @@ package com.chesscover;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 public class ChessManager {
 
@@ -42,6 +43,13 @@ public class ChessManager {
         if (nQ>0) {
             _chessBoard = AnalyzeBoard(_chessBoard, nQ, nB);
             nQ--;
+            for (int i=0;i<getBoardRows();i++){
+                for(int j=0;j<getBoardCols();j++){
+                    System.out.print(_chessBoard[i][j]);
+                }
+                System.out.println();
+            }
+            System.out.println();
             FindSolutions(nQ,nB);
         }else{
             for (int i=0;i<getBoardRows();i++){
@@ -55,45 +63,40 @@ public class ChessManager {
 
     // analyze the board
     private char[][] AnalyzeBoard(char[][] board, int remQ, int remB){
-        char[][] bufferBoard = board;
+        char[][] bufferBoard = copyArray(board);
         int cCoveredMax = 0;
         int cCovered;
         int[] maxCoverPos = {0,0};
-        // if there are queen pieces remaining
-        if (remQ>0) {
-            //iterate over the board
-            for (int i = 0; i < getBoardRows(); i++) {
-                for (int j = 0; j < getBoardCols(); j++) {
-                    // if the cell is empty analyze
-                    if (board[i][j] == '*') {
-                        // find the queen position that covers the most cells
-                        cCovered = AnalyzeQPlacement(bufferBoard, i, j);
-                        for(char[] row:bufferBoard)
-                            Arrays.fill(row,'*');
-                        if (cCoveredMax < cCovered) {
-                            cCoveredMax = cCovered;
-                            maxCoverPos[0] = i;
-                            maxCoverPos[1] = j;
-                        }
-                    }
+        //iterate over the board
+        for (int i = 0; i < getBoardRows(); i++) {
+            for (int j = 0; j < getBoardCols(); j++) {
+                if (board[i][j] != 'Q') {
+                    // find the queen position that covers the most cells
+                    cCovered = AnalyzeQPlacement(bufferBoard, i, j);
+                    bufferBoard = copyArray(board);
+                    if ((cCoveredMax < cCovered)){
+                        cCoveredMax = cCovered;
+                        maxCoverPos[0] = i;
+                        maxCoverPos[1] = j;
+                    } //TODO: nearest piece check
                 }
             }
         }
         AnalyzeQPlacement(bufferBoard,maxCoverPos[0],maxCoverPos[1]);
         bufferBoard[maxCoverPos[0]][maxCoverPos[1]] = 'Q';
+        ChessPiece.AddPiece('Q',maxCoverPos[0],maxCoverPos[1]);
+        System.out.println(cCoveredMax);
         return bufferBoard;
     }
 
     private int AnalyzeQPlacement(char[][] anBoard, int rPos,int cPos){
         int cellsCovered = 0;
         // check down direction
-        anBoard[rPos][cPos] = 'Q';
+        //anBoard[rPos][cPos] = 'Q';
         for (int i=rPos+1;i<getBoardRows();i++){
             if (anBoard[i][cPos] == '*'){
                 cellsCovered++;
                 anBoard[i][cPos] = '+';
-            }else{
-                break;
             }
         }
         //check up
@@ -101,8 +104,6 @@ public class ChessManager {
             if (anBoard[i][cPos] == '*'){
                 cellsCovered++;
                 anBoard[i][cPos] = '+';
-            }else{
-                break;
             }
         }
         //check right
@@ -110,8 +111,6 @@ public class ChessManager {
             if (anBoard[rPos][i] == '*'){
                 cellsCovered++;
                 anBoard[rPos][i] = '+';
-            }else{
-                break;
             }
         }
         //check left
@@ -119,14 +118,15 @@ public class ChessManager {
             if (anBoard[rPos][i] == '*'){
                 cellsCovered++;
                 anBoard[rPos][i] = '+';
-            }else{
-                break;
             }
         }
+        // for NE and NW diagonals the sum of i and j should equal the sum of the piece's coordinates
+        // for SE and SW diagonals they should fit the identity matrix
+        // with the indices shifted by row and column indices
         // check NE diagonal
         for (int i=rPos-1;i>=0;i--){
             for (int j=cPos+1;j<getBoardCols();j++){
-                if ((anBoard[i][j] == '*') && (i+j==getBoardRows()-1)){
+                if ((anBoard[i][j] == '*') && (i+j==rPos+cPos)){
                     cellsCovered++;
                     anBoard[i][j] = '+';
                 }
@@ -135,7 +135,7 @@ public class ChessManager {
         // check SE diagonal
         for (int i=rPos+1;i<getBoardRows();i++){
             for (int j=cPos+1;j<getBoardCols();j++){
-                if ((anBoard[i][j] == '*') && (i==j)){
+                if ((anBoard[i][j] == '*') && ((i-rPos)==(j-cPos))){
                     cellsCovered++;
                     anBoard[i][j] = '+';
                 }
@@ -144,7 +144,7 @@ public class ChessManager {
         // check NW diagonal
         for (int i=rPos-1;i>=0;i--){
             for (int j=cPos-1;j>=0;j--){
-                if ((anBoard[i][j] == '*') && (i==j)){
+                if ((anBoard[i][j] == '*') && ((i-rPos)==(j-cPos))){
                     cellsCovered++;
                     anBoard[i][j] = '+';
                 }
@@ -153,13 +153,23 @@ public class ChessManager {
         // check SW diagonal
         for (int i=rPos+1;i<getBoardRows();i++){
             for (int j=cPos-1;j>=0;j--){
-                if ((anBoard[i][j] == '*') && (i+j==getBoardRows()-1)){
+                if ((anBoard[i][j] == '*') && (i+j==rPos+cPos)){
                     cellsCovered++;
                     anBoard[i][j] = '+';
                 }
             }
         }
         return cellsCovered;
+    }
+
+    // we need to copy the arrays for the buffer since Java passes them by reference
+    private char[][] copyArray(char[][] source){
+        int size = source.length;
+        char[][] target = new char[_numRows][_numCols];
+        for (int n=0;n<size;n++){
+            System.arraycopy(source[n],0,target[n],0,source[n].length);
+        }
+        return target;
     }
 
 
