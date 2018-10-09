@@ -1,3 +1,6 @@
+/*
+    Manage chess pieces: keep track of ones that are on the board and analyze specific pieces
+ */
 package com.chesscover;
 
 import java.util.ArrayList;

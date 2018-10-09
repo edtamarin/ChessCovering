@@ -1,3 +1,7 @@
+/*
+    The manager class handling the analysis and board operations.
+    Egor Tamarin, 2018
+ */
 package com.chesscover;
 
 import java.util.ArrayList;
@@ -73,11 +77,13 @@ public class ChessManager {
                 if (board[i][j] != 'Q') {
                     // find the queen position that covers the most cells
                     cCovered = AnalyzeQPlacement(bufferBoard, i, j);
+                    // check if there is a piece nearby before making a decision
+                    // placing a queen near another one is rarely efficient as the 3*3 space is completely covered
                     if ((cCoveredMax < cCovered) && (!ChessPiece.isNearby(bufferBoard,'Q',i,j))){
                         cCoveredMax = cCovered;
                         maxCoverPos[0] = i;
                         maxCoverPos[1] = j;
-                    } //TODO: nearest piece check
+                    }
                     bufferBoard = copyArray(board);
                 }
             }
