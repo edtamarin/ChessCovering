@@ -29,10 +29,12 @@ public class ChessPiece {
     }
 
     // find out if there is a piece in any one of the next cells
-    public boolean isNearby(char[][] testBoard, char type, int rowC, int colC){
+    public static boolean isNearby(char[][] testBoard, char type, int rowC, int colC){
+        int boardRows = testBoard.length; // TODO: implement Board class
+        int boardCols = testBoard[0].length;
         for(int[] offset:NEIGHBOURS){
-            if ((rowC+offset[0]>=0) && (colC+offset[1]>=0)){
-                if (testBoard[rowC+offset[0]][colC+offset[1]] == 'Q'){
+            if (((rowC+offset[0]>=0) && (colC+offset[1]>=0)) && ((rowC+offset[0]<boardRows) && (colC+offset[1]<boardCols))){
+                if (testBoard[rowC+offset[0]][colC+offset[1]] == type){
                     return true;
                 }
             }

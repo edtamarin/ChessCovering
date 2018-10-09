@@ -73,12 +73,12 @@ public class ChessManager {
                 if (board[i][j] != 'Q') {
                     // find the queen position that covers the most cells
                     cCovered = AnalyzeQPlacement(bufferBoard, i, j);
-                    bufferBoard = copyArray(board);
-                    if ((cCoveredMax < cCovered)){
+                    if ((cCoveredMax < cCovered) && (!ChessPiece.isNearby(bufferBoard,'Q',i,j))){
                         cCoveredMax = cCovered;
                         maxCoverPos[0] = i;
                         maxCoverPos[1] = j;
                     } //TODO: nearest piece check
+                    bufferBoard = copyArray(board);
                 }
             }
         }
