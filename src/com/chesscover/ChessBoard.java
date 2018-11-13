@@ -15,9 +15,22 @@ public class ChessBoard {
         _numCols = cols;
     }
 
+    public boolean isFilled(){
+        for (int i=0;i<this._numRows;i++){
+            for (int j=0;j<this._numCols;j++){
+                if (this._chessBoard[i][j] == '*') return false;
+            }
+        }
+        return true;
+    }
+
     public char[][] getChessBoard(){
         return this._chessBoard;
     }
+
+    public char getChessBoardCell(int row, int col){ return  this._chessBoard[row][col];}
+
+    public void setChessBoard(char[][] board){ this._chessBoard = board;}
 
     public int getBoardRows(){
         return _numRows;

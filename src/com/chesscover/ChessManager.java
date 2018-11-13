@@ -10,7 +10,7 @@ import java.util.Iterator;
 
 public class ChessManager {
 
-    private char[][] _chessBoard;
+    private ChessBoard _chessBoard;
     private int _numRows;
     private int _numCols;
     private int _numQueens;
@@ -18,7 +18,7 @@ public class ChessManager {
     private int solutionMode;
 
     public ChessManager(int m, int n, int nQ, int nB){
-        _chessBoard = new char[m][n];
+        _chessBoard = new ChessBoard(m,n);
         _numRows = m;
         _numCols = n;
         _numQueens = nQ;
@@ -29,7 +29,7 @@ public class ChessManager {
         // Q/B - Queen or Bishop
         for (int i=0; i<m; i++){
             for (int j=0; j<n; j++){
-                _chessBoard[i][j] = '*';
+                _chessBoard.getChessBoard()[i][j] = '*';
             }
         }
         // set the mode for solutions
@@ -44,8 +44,8 @@ public class ChessManager {
 
     //find the possible solutions
     public void FindSolutions(int nQ, int nB){
-        if ((nQ>0) || (nB>0)) { // analyze for queens
-            _chessBoard = AnalyzeBoard(_chessBoard, nQ, nB);
+        if ((nQ>0) || ((nB>0) || ((this.solutionMode == 0) && (!_chessBoard.isFilled())))) { // analyze for queens
+            _chessBoard.setChessBoard(AnalyzeBoard(_chessBoard.getChessBoard(), nQ, nB));
             if (nQ>0){
                 nQ--;
             }else if (nB>0){
@@ -63,7 +63,7 @@ public class ChessManager {
         }else{ // print the solution
             for (int i=0;i<getBoardRows();i++){
                 for(int j=0;j<getBoardCols();j++){
-                    System.out.print(_chessBoard[i][j]);
+                    System.out.print(_chessBoard.getChessBoard()[i][j]);
                 }
                 System.out.println();
             }
@@ -79,7 +79,7 @@ public class ChessManager {
         char pieceType = ' ';
         if (remQ>0){
             pieceType = 'Q';
-        }else if ((remB>0) || (this.solutionMode == 0)){
+        }else if ((remB>0) || ((this.solutionMode == 0) && (!_chessBoard.isFilled()))){
             pieceType = 'B';
         }
         // iterate over the board
@@ -179,12 +179,6 @@ public class ChessManager {
                 }
             }
         }
-        return cellsCovered;
-    }
-
-    // analyze the bishop placements
-    private int AnalyzeBPlacement(char[][] anBoard, int rPos,int cPos){
-        int cellsCovered = 0;
         return cellsCovered;
     }
 
