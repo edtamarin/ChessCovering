@@ -7,10 +7,14 @@ import java.util.ArrayList;
 
 public class ChessPiece {
 
-    private static final int[][] NEIGHBOURS = {
+    private static final int[][] Q_NEIGHBOURS = {
             {-1, -1}, {-1, 0}, {-1, +1},
             { 0, -1},          { 0, +1},
             {+1, -1}, {+1, 0}, {+1, +1}};
+
+    private static final int[][] B_NEIGHBOURS = {
+            {-1, -1},          {-1, +1},
+            {+1, -1},          {+1, +1}};
 
     private char _pieceType;
     private int _pieceX;
@@ -35,10 +39,20 @@ public class ChessPiece {
     public static boolean isNearby(char[][] testBoard, char type, int rowC, int colC){
         int boardRows = testBoard.length; // TODO: implement Board class
         int boardCols = testBoard[0].length;
-        for(int[] offset:NEIGHBOURS){
-            if (((rowC+offset[0]>=0) && (colC+offset[1]>=0)) && ((rowC+offset[0]<boardRows) && (colC+offset[1]<boardCols))){
-                if (testBoard[rowC+offset[0]][colC+offset[1]] == type){
-                    return true;
+        if (type == 'Q') { // queen neighbours
+            for (int[] offset : Q_NEIGHBOURS) {
+                if (((rowC + offset[0] >= 0) && (colC + offset[1] >= 0)) && ((rowC + offset[0] < boardRows) && (colC + offset[1] < boardCols))) {
+                    if (testBoard[rowC + offset[0]][colC + offset[1]] == type) {
+                        return true;
+                    }
+                }
+            }
+        }else{ // bishop neighbours
+            for (int[] offset : B_NEIGHBOURS) {
+                if (((rowC + offset[0] >= 0) && (colC + offset[1] >= 0)) && ((rowC + offset[0] < boardRows) && (colC + offset[1] < boardCols))) {
+                    if (testBoard[rowC + offset[0]][colC + offset[1]] == type) {
+                        return true;
+                    }
                 }
             }
         }

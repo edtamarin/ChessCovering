@@ -44,18 +44,23 @@ public class ChessManager {
 
     //find the possible solutions
     public void FindSolutions(int nQ, int nB){
-        if (nQ>0) {
+        if ((nQ>0) || (nB>0)) { // analyze for queens
             _chessBoard = AnalyzeBoard(_chessBoard, nQ, nB);
-            nQ--;
+            if (nQ>0){
+                nQ--;
+            }else if (nB>0){
+                nB--;
+            }
+            /*
             for (int i=0;i<getBoardRows();i++){
                 for(int j=0;j<getBoardCols();j++){
                     System.out.print(_chessBoard[i][j]);
                 }
                 System.out.println();
             }
-            System.out.println();
+            System.out.println(); */
             FindSolutions(nQ,nB);
-        }else{
+        }else{ // print the solution
             for (int i=0;i<getBoardRows();i++){
                 for(int j=0;j<getBoardCols();j++){
                     System.out.print(_chessBoard[i][j]);
@@ -71,15 +76,21 @@ public class ChessManager {
         int cCoveredMax = 0;
         int cCovered;
         int[] maxCoverPos = {0,0};
-        //iterate over the board
+        char pieceType = ' ';
+        if (remQ>0){
+            pieceType = 'Q';
+        }else if ((remB>0) || (this.solutionMode == 0)){
+            pieceType = 'B';
+        }
+        // iterate over the board
         for (int i = 0; i < getBoardRows(); i++) {
             for (int j = 0; j < getBoardCols(); j++) {
-                if (board[i][j] != 'Q') {
-                    // find the queen position that covers the most cells
-                    cCovered = AnalyzeQPlacement(bufferBoard, i, j);
+                if ((board[i][j] != 'Q') || (board[i][j] != 'B')){
+                    // find the piece position that covers the most cells
+                    cCovered = AnalyzePiecePlacement(bufferBoard,pieceType, i, j);
                     // check if there is a piece nearby before making a decision
                     // placing a queen near another one is rarely efficient as the 3*3 space is completely covered
-                    if ((cCoveredMax < cCovered) && (!ChessPiece.isNearby(bufferBoard,'Q',i,j))){
+                    if ((cCoveredMax < cCovered) && (!ChessPiece.isNearby(bufferBoard,pieceType,i,j))){
                         cCoveredMax = cCovered;
                         maxCoverPos[0] = i;
                         maxCoverPos[1] = j;
@@ -88,42 +99,45 @@ public class ChessManager {
                 }
             }
         }
-        AnalyzeQPlacement(bufferBoard,maxCoverPos[0],maxCoverPos[1]);
-        bufferBoard[maxCoverPos[0]][maxCoverPos[1]] = 'Q';
-        ChessPiece.AddPiece('Q',maxCoverPos[0],maxCoverPos[1]);
-        System.out.println(cCoveredMax);
+        AnalyzePiecePlacement(bufferBoard,pieceType,maxCoverPos[0],maxCoverPos[1]);
+        bufferBoard[maxCoverPos[0]][maxCoverPos[1]] = pieceType;
+        ChessPiece.AddPiece(pieceType,maxCoverPos[0],maxCoverPos[1]);
+        //System.out.println(cCoveredMax);
         return bufferBoard;
     }
 
-    private int AnalyzeQPlacement(char[][] anBoard, int rPos,int cPos){
+    private int AnalyzePiecePlacement(char[][] anBoard, char type, int rPos,int cPos){
         int cellsCovered = 0;
         // check down direction
         //anBoard[rPos][cPos] = 'Q';
-        for (int i=rPos+1;i<getBoardRows();i++){
-            if (anBoard[i][cPos] == '*'){
-                cellsCovered++;
-                anBoard[i][cPos] = '+';
+        // only check horizontal/vertical for a queen
+        if (type == 'Q') {
+            for (int i = rPos + 1; i < getBoardRows(); i++) {
+                if (anBoard[i][cPos] == '*') {
+                    cellsCovered++;
+                    anBoard[i][cPos] = '+';
+                }
             }
-        }
-        //check up
-        for (int i=rPos-1;i>=0;i--){
-            if (anBoard[i][cPos] == '*'){
-                cellsCovered++;
-                anBoard[i][cPos] = '+';
+            //check up
+            for (int i = rPos - 1; i >= 0; i--) {
+                if (anBoard[i][cPos] == '*') {
+                    cellsCovered++;
+                    anBoard[i][cPos] = '+';
+                }
             }
-        }
-        //check right
-        for (int i=cPos+1;i<getBoardCols();i++){
-            if (anBoard[rPos][i] == '*'){
-                cellsCovered++;
-                anBoard[rPos][i] = '+';
+            //check right
+            for (int i = cPos + 1; i < getBoardCols(); i++) {
+                if (anBoard[rPos][i] == '*') {
+                    cellsCovered++;
+                    anBoard[rPos][i] = '+';
+                }
             }
-        }
-        //check left
-        for (int i=cPos-1;i>=0;i--){
-            if (anBoard[rPos][i] == '*'){
-                cellsCovered++;
-                anBoard[rPos][i] = '+';
+            //check left
+            for (int i = cPos - 1; i >= 0; i--) {
+                if (anBoard[rPos][i] == '*') {
+                    cellsCovered++;
+                    anBoard[rPos][i] = '+';
+                }
             }
         }
         // for NE and NW diagonals the sum of i and j should equal the sum of the piece's coordinates
@@ -165,6 +179,12 @@ public class ChessManager {
                 }
             }
         }
+        return cellsCovered;
+    }
+
+    // analyze the bishop placements
+    private int AnalyzeBPlacement(char[][] anBoard, int rPos,int cPos){
+        int cellsCovered = 0;
         return cellsCovered;
     }
 
