@@ -23,6 +23,6 @@ public class Main {
         numOfBishops = inputScanner.nextInt();
         // create a CHessManager;
         ChessManager gameManager = new ChessManager(boardM,boardN,numOfQueens,numOfBishops);
-        gameManager.FindSolutions(numOfQueens,numOfBishops);
+        gameManager.FindSolutions();
     }
 }
