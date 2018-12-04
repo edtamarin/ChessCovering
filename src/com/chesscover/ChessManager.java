@@ -85,7 +85,7 @@ public class ChessManager {
         // iterate over the board
         for (int i = 0; i < cB.getBoardRows(); i++) {
             for (int j = 0; j < cB.getBoardCols(); j++) {
-                if ((cB.getChessBoardCell(i,j) != 'Q') || (cB.getChessBoardCell(i,j) != 'B')){
+                if (!cB.getChessBoard()[i][j].containsPiece()){
                     // find the piece position that covers the most cells
                     cCovered = AnalyzePiecePlacement(bufferBoard,pieceType, i, j);
                     // check if there is a piece nearby before making a decision
@@ -118,12 +118,18 @@ public class ChessManager {
                     cellsCovered++;
                     anBoard[i][cPos].setCellType('+');
                 }
+                if (anBoard[i][cPos].containsPiece()){
+                    break;
+                }
             }
             //check up
             for (int i = rPos - 1; i >= 0; i--) {
                 if (anBoard[i][cPos].getCellType() == '*') {
                     cellsCovered++;
                     anBoard[i][cPos].setCellType('+');
+                }
+                if (anBoard[i][cPos].containsPiece()){
+                    break;
                 }
             }
             //check right
@@ -133,6 +139,9 @@ public class ChessManager {
                     anBoard[rPos][i].setAttackedByMore();
                     anBoard[rPos][i].setCellType('+');
                 }
+                if (anBoard[rPos][i].containsPiece()){
+                    break;
+                }
             }
             //check left
             for (int i = cPos - 1; i >= 0; i--) {
@@ -140,103 +149,66 @@ public class ChessManager {
                     cellsCovered++;
                     anBoard[rPos][i].setCellType('+');
                 }
+                if (anBoard[rPos][i].containsPiece()){
+                    break;
+                }
             }
         }
         // for NE and NW diagonals the sum of i and j should equal the sum of the piece's coordinates
         // for SE and SW diagonals they should fit the identity matrix
         // with the indices shifted by row and column indices
         // check NE diagonal
+        outerloop1:
         for (int i=rPos-1;i>=0;i--){
             for (int j=cPos+1;j<_chessBoard.getBoardCols();j++){
                 if ((anBoard[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
                     cellsCovered++;
                     anBoard[i][j].setCellType('+');
+                }
+                if (anBoard[i][j].containsPiece()){
+                    break outerloop1;
                 }
             }
         }
         // check SE diagonal
+        outerloop2:
         for (int i=rPos+1;i<_chessBoard.getBoardRows();i++){
             for (int j=cPos+1;j<_chessBoard.getBoardCols();j++){
                 if ((anBoard[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
                     cellsCovered++;
                     anBoard[i][j].setCellType('+');
                 }
+                if (anBoard[i][j].containsPiece()){
+                    break outerloop2;
+                }
             }
         }
         // check NW diagonal
+        outerloop3:
         for (int i=rPos-1;i>=0;i--){
             for (int j=cPos-1;j>=0;j--){
                 if ((anBoard[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
                     cellsCovered++;
                     anBoard[i][j].setCellType('+');
                 }
+                if (anBoard[i][j].containsPiece()){
+                    break outerloop3;
+                }
             }
         }
         // check SW diagonal
+        outerloop4:
         for (int i=rPos+1;i<_chessBoard.getBoardRows();i++){
             for (int j=cPos-1;j>=0;j--){
                 if ((anBoard[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
                     cellsCovered++;
                     anBoard[i][j].setCellType('+');
                 }
+                if (anBoard[i][j].containsPiece()){
+                    break outerloop4;
+                }
             }
         }
         return cellsCovered;
-    }
-
-    // fix bishop blocking verticals and horizontals
-    private void fixBishopPlacement(BoardCell[][] board){
-        ArrayList<ChessPiece> specialCells = new ArrayList<>();
-        BoardCell[] boardRow;
-        BoardCell[] boardCol;
-        char lastSeen = ' ';
-        int[] lastCoords = {0,0};
-        boolean edgeOccupied = false;
-        boolean hasQ = false;
-        for(int i=0; i<_chessBoard.getBoardRows();i++){ // first check row by row
-            boardRow = board[i];
-            for (int j=0;j<_chessBoard.getBoardCols();j++){
-                if (boardRow[j].containsPiece()) { // if there is a piece add it and check if it's a queen
-                    specialCells.add(new ChessPiece(boardRow[j],i,j));
-                    if (boardRow[j].getCellType() == 'Q'){
-                        hasQ = true;
-                    }
-                }
-            }
-            if ((specialCells.isEmpty() || (!hasQ))){
-                break; // if the row is empty or has no queens nothing should be changed
-            }else{
-                if ((specialCells.get(0).getX() == 0) && (!specialCells.get(0).getCell().containsPiece())){
-                    lastSeen = 'E'; // if the edge on the cell is empty declare it
-                }
-                if ((specialCells.get(specialCells.size()-1).getX() == 0) && (specialCells.get(specialCells.size()-1).getCell().containsPiece())){
-                    specialCells.add(new ChessPiece(new BoardCell('E'),i,specialCells.get(0).getY())); // same for other edge
-                }
-            }
-            for (ChessPiece piece:specialCells) {
-                switch (piece.getCell().getCellType()){
-                    case 'B': // if we see a bishop it blocks cells behind him but only if there was no queen
-                        if (lastSeen == 'E'){
-                            for (int x=0;x<=piece.getX();x++){
-                                board[piece.getX()][piece.getY()].setAttackedByLess();
-                            }
-                        }
-                        lastSeen = 'B';
-                        lastCoords[0] = piece.getX();
-                        lastCoords[1] = piece.getY();
-                        break;
-                    case 'Q': // if we see a queen nothing changes
-                        lastSeen = 'Q';
-                        lastCoords[0] = piece.getX();
-                        lastCoords[1] = piece.getY();
-                    case 'E': // if we reach the edge
-                        if (lastSeen == 'B'){
-                            for (int x=lastCoords[0];x<=piece.getX();x++){
-                                board[piece.getX()][piece.getY()].setAttackedByLess();
-                            }
-                        }
-                }
-            }
-        }
     }
 }
