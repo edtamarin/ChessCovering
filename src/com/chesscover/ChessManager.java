@@ -45,7 +45,7 @@ public class ChessManager {
     //find the possible solutions
     public void FindSolutions(){
         if ((this._numQueens>0) || ((this._numBishops>0) || ((this.solutionMode == 0) && (!_chessBoard.isFilled())))) { // analyze for queens
-            _chessBoard.setChessBoard(AnalyzeBoard(_chessBoard, this._numQueens, this._numBishops));
+            AnalyzeBoard(_chessBoard, this._numQueens, this._numBishops);
             if (this._numQueens>0){
                 this._numQueens--;
             }else if (this._numBishops>0){
@@ -61,17 +61,12 @@ public class ChessManager {
             System.out.println();*/
             FindSolutions();
         }else{ // print the solution
-            for (int i=0;i<_chessBoard.getBoardRows();i++){
-                for(int j=0;j<_chessBoard.getBoardCols();j++){
-                    System.out.print(_chessBoard.getChessBoard()[i][j].getCellType());
-                }
-                System.out.println();
-            }
+            this._chessBoard.printBoard();
         }
     }
 
     // analyze the board
-    private BoardCell[][] AnalyzeBoard(ChessBoard cB, int remQ, int remB){
+    private void AnalyzeBoard(ChessBoard cB, int remQ, int remB){
         BoardCell[][] bufferBoard = cB.copyBoard();
         int cCoveredMax = 0;
         int cCovered;
@@ -79,7 +74,7 @@ public class ChessManager {
         char pieceType = ' ';
         if (remQ>0){
             pieceType = 'Q';
-        }else if ((remB>0) || ((this.solutionMode == 0) && (!_chessBoard.isFilled()))){
+        }else if ((remB>0) || ((this.solutionMode == 0) && (!this._chessBoard.isFilled()))){
             pieceType = 'B';
         }
         // iterate over the board
@@ -99,11 +94,15 @@ public class ChessManager {
                 }
             }
         }
-        AnalyzePiecePlacement(bufferBoard,pieceType,maxCoverPos[0],maxCoverPos[1]);
+        //AnalyzePiecePlacement(bufferBoard,pieceType,maxCoverPos[0],maxCoverPos[1]);
         bufferBoard[maxCoverPos[0]][maxCoverPos[1]].setCellType(pieceType);
         ChessPiece.AddPiece(bufferBoard[maxCoverPos[0]][maxCoverPos[1]],maxCoverPos[0],maxCoverPos[1]);
+/*        for (ChessPiece piece:ChessPiece.getListOfPieces()) {
+            System.out.print(piece.getCell().getCellType() + " " + piece.getRow() + " " + piece.getCol() + " | ");
+        }
+        System.out.println();*/
+        cB.renderNewBoard();
         //System.out.println(cCoveredMax);
-        return bufferBoard;
     }
 
     private int AnalyzePiecePlacement(BoardCell[][] anBoard, char type, int rPos,int cPos){
@@ -136,7 +135,6 @@ public class ChessManager {
             for (int i = cPos + 1; i < _chessBoard.getBoardCols(); i++) {
                 if (anBoard[rPos][i].getCellType() == '*') {
                     cellsCovered++;
-                    anBoard[rPos][i].setAttackedByMore();
                     anBoard[rPos][i].setCellType('+');
                 }
                 if (anBoard[rPos][i].containsPiece()){
@@ -165,7 +163,7 @@ public class ChessManager {
                     cellsCovered++;
                     anBoard[i][j].setCellType('+');
                 }
-                if (anBoard[i][j].containsPiece()){
+                if (anBoard[i][j].containsPiece() && (i+j==rPos+cPos)){
                     break outerloop1;
                 }
             }
@@ -178,7 +176,7 @@ public class ChessManager {
                     cellsCovered++;
                     anBoard[i][j].setCellType('+');
                 }
-                if (anBoard[i][j].containsPiece()){
+                if (anBoard[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
                     break outerloop2;
                 }
             }
@@ -191,7 +189,7 @@ public class ChessManager {
                     cellsCovered++;
                     anBoard[i][j].setCellType('+');
                 }
-                if (anBoard[i][j].containsPiece()){
+                if (anBoard[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
                     break outerloop3;
                 }
             }
@@ -204,7 +202,7 @@ public class ChessManager {
                     cellsCovered++;
                     anBoard[i][j].setCellType('+');
                 }
-                if (anBoard[i][j].containsPiece()){
+                if (anBoard[i][j].containsPiece() && (i+j==rPos+cPos)){
                     break outerloop4;
                 }
             }

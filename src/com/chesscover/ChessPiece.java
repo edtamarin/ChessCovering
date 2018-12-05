@@ -4,7 +4,6 @@
 package com.chesscover;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class ChessPiece{
 
@@ -18,14 +17,14 @@ public class ChessPiece{
             {+1, -1},          {+1, +1}};
 
     private BoardCell _pieceCell;
-    private int _pieceX;
-    private int _pieceY;
+    private int _pieceRow;
+    private int _pieceColumn;
     private static ArrayList<ChessPiece> _listOfAllPieces = new ArrayList<>();
 
     public ChessPiece(BoardCell cell, int x, int y){
         _pieceCell = cell;
-        _pieceX = x;
-        _pieceY = y;
+        _pieceRow = x;
+        _pieceColumn = y;
     }
 
     public static void AddPiece(BoardCell cell, int x, int y){
@@ -64,12 +63,12 @@ public class ChessPiece{
         return _listOfAllPieces;
     }
 
-    public int getX(){
-        return this._pieceX;
+    public int getRow(){
+        return this._pieceRow;
     }
 
-    public int getY(){
-        return this._pieceY;
+    public int getCol(){
+        return this._pieceColumn;
     }
 
     public BoardCell getCell(){return this._pieceCell;}
