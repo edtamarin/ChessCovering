@@ -38,6 +38,18 @@ public class ChessBoard {
         return target;
     }
 
+    public ArrayList<ChessPiece> boardToListOfPieces(){
+        ArrayList<ChessPiece> piecesOnBoard = new ArrayList<>();
+        for (int i=0;i<this._numRows;i++){
+            for(int j=0;j<this._numCols;j++){
+                if (this._chessBoard[i][j].containsPiece()){
+                    piecesOnBoard.add(new ChessPiece(new BoardCell(this._chessBoard[i][j]),i,j));
+                }
+            }
+        }
+        return piecesOnBoard;
+    }
+
     // empty the board
     public void emptyBoard(){
         for (BoardCell[] cellArray:this._chessBoard) {
@@ -49,10 +61,16 @@ public class ChessBoard {
     }
 
     // analyze the piece placement
-    public void renderNewBoard(){
-        ArrayList<ChessPiece> listOfPieces = ChessPiece.getListOfPieces();
+    public void renderNewBoard(ChessPiece providedPiece){
+        ArrayList<ChessPiece> listOfPieces;
+        if (providedPiece != null){ // simulating the optional parameter
+            listOfPieces = this.boardToListOfPieces();
+            listOfPieces.add(providedPiece);
+        }else {
+            listOfPieces = ChessPiece.getListOfPieces();
+        }
         this.emptyBoard(); // empty the board
-        for (ChessPiece piece:ChessPiece.getListOfPieces()) { // place pieces on board
+        for (ChessPiece piece:listOfPieces) { // place pieces on board
             this._chessBoard[piece.getRow()][piece.getCol()].setCellType(piece.getCell().getCellType());
         }
         for (ChessPiece piece:listOfPieces) { // radiate from each piece
@@ -62,7 +80,6 @@ public class ChessBoard {
             }
             analyzeDiagonal(piece);
         }
-        printBoard();
     }
 
     // check left and right directions from a piece
@@ -185,7 +202,6 @@ public class ChessBoard {
             }
             System.out.println();
         }
-        System.out.println();
     }
 
     public BoardCell[][] getChessBoard(){
