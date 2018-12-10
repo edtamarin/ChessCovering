@@ -13,6 +13,7 @@ public class ChessManager {
     private int _numQueens;
     private int _numBishops;
     private int solutionMode;
+    private boolean _doneAnalyzing = false;
     private ArrayList<ChessBoard> _possibleBoards = new ArrayList<>();
     private Random _numberGenerator;
 
@@ -36,48 +37,51 @@ public class ChessManager {
             solutionMode = 0;
         }else{
             solutionMode = 1;
-            _possibleBoards.add(_chessBoard);
+
         }
+        _possibleBoards.add(_chessBoard);
         _numberGenerator = new Random();
     }
 
     //find the possible solutions
     public void FindSolutions(){
-        if ((this._numQueens>0) || ((this._numBishops>0) || ((this.solutionMode == 0) && (!_chessBoard.isFilled())))) {
+        // run this either until we run out of pieces  of a minimum solution has been found
+        if ((this._numQueens>0) || (this._numBishops>0) || ((this.solutionMode == 0) && (!this._doneAnalyzing))) {
             if(this.solutionMode == 0) {
-                AnalyzeBoard(_chessBoard, this._numQueens, this._numBishops);
+                AnalyzeBoard(this._numQueens, this._numBishops);
             }else{
                 AnalyzeBoard(this._numQueens, this._numBishops);
             }
+            // update number of pieces
             if (this._numQueens>0){
                 this._numQueens--;
             }else if (this._numBishops>0){
                 this._numBishops--;
             }
-            /*
-            for (int i=0;i<_chessBoard.getBoardRows();i++){
-                for(int j=0;j<_chessBoard.getBoardCols();j++){
-                    System.out.print(_chessBoard.getChessBoard()[i][j].getNumOfAttacks());
-                }
-                System.out.println();
-            }
-            System.out.println();*/
+            // run the algorithm again
             FindSolutions();
         }else{ // print the solution
-            if (this.solutionMode == 0) {
-                System.out.println("-----------");
-                System.out.println("Solution found!");
-                this._chessBoard.printBoard();
-                System.out.println("-----------");
-            }else{
-                System.out.println("-----------");
-                System.out.println("Solution found!");
-                System.out.println(_possibleBoards.size()-1 + " other solutions exist.");
-                int boardIndex = _numberGenerator.nextInt(_possibleBoards.size());
-                ChessBoard boardToPrint = this._possibleBoards.get(boardIndex);
-                boardToPrint.printBoard();
-                System.out.println("-----------");
+            // find the boards that are filled (correct solutions)
+            System.out.println("---------------");
+            ArrayList<ChessBoard> finalBoardArray = new ArrayList<>();
+            for (ChessBoard board:this._possibleBoards){
+                if (board.isFilled()) finalBoardArray.add(board);
             }
+            // if no solution found notify user
+            if (finalBoardArray.size() == 0){
+                System.out.println("No valid solution found!");
+                System.out.println("Change chesspiece data and try again.");
+                return;
+            }
+            // pick a random board to print
+            int boardIndex = _numberGenerator.nextInt(finalBoardArray.size());
+            ChessBoard boardToPrint = finalBoardArray.get(boardIndex);
+            System.out.println("Solution found!");
+            System.out.println();
+            if (this.solutionMode == 1) { // if manual search, print how many possibilities found
+                System.out.println(finalBoardArray.size()-1 + " other solutions exist.");
+            }
+            boardToPrint.printBoard();
         }
     }
 
@@ -88,11 +92,10 @@ public class ChessManager {
         ArrayList<ChessPiece> maximumCoverPositions = new ArrayList<>();
         int cCoveredMax = 0;
         int cCovered;
-        int[] maxCoverPos = {0,0};
         char pieceType = ' ';
         if (remQ>0){
             pieceType = 'Q';
-        }else if ((remB>0) || ((this.solutionMode == 0) && (!this._chessBoard.isFilled()))){
+        }else if ((remB>0) || ((this.solutionMode == 0) && (!cB.isFilled()))){
             pieceType = 'B';
         }
         // iterate over the board
@@ -101,45 +104,48 @@ public class ChessManager {
                 if (!cB.getChessBoard()[i][j].containsPiece()){
                     // find the piece position that covers the most cells
                     cCovered = AnalyzePiecePlacement(bufferBoard,pieceType, i, j);
+                    if (bufferBoard[i][j].getNumOfAttacks() == 0){
+                        cCovered++;
+                    }
                     // check if there is a piece nearby before making a decision
                     // placing a queen near another one is rarely efficient as the 3*3 space is completely covered
-                    if ((cCoveredMax < cCovered) && (!ChessPiece.isNearby(bufferBoard,pieceType,i,j))){
-                        cCoveredMax = cCovered;
-                        maxCoverPos[0] = i;
-                        maxCoverPos[1] = j;
-                    }
                     if ((cCoveredMax <= cCovered) && (!ChessPiece.isNearby(bufferBoard,pieceType,i,j))){
-                        if (solutionMode == 1){
-                            coverPositions.add(new CoverInfo(cCovered,new ChessPiece(new BoardCell(pieceType),i,j)));
-                        }
+                        cCoveredMax = cCovered;
+                        coverPositions.add(new CoverInfo(cCovered,new ChessPiece(new BoardCell(pieceType),i,j)));
                     }
                     bufferBoard = cB.copyBoard();
                 }
             }
         }
+        // take only the positions with maximum coverage
         for (CoverInfo info:coverPositions){
-            if (info.positionsCovered == cCoveredMax){
+            if (info.positionsCovered >= cCoveredMax-1){
                 maximumCoverPositions.add(info.coveringPiece);
             }
         }
-        bufferBoard[maxCoverPos[0]][maxCoverPos[1]].setCellType(pieceType);
-        ChessPiece.AddPiece(bufferBoard[maxCoverPos[0]][maxCoverPos[1]],maxCoverPos[0],maxCoverPos[1]);
-        if (solutionMode == 0) cB.renderNewBoard(null);
         return maximumCoverPositions;
     }
 
     private void AnalyzeBoard(int remQ, int remB){
         ArrayList<ChessPiece> listOfMaxPlacements;
         ArrayList<ChessBoard> listOfNewBoards = new ArrayList<>();
-        for (ChessBoard board:this._possibleBoards){ // for each new possible placement
+        for (ChessBoard board:this._possibleBoards){ // check each possible board
+            // if we're in automatic mode and we find a filled board, then a minimum number has been reached, we quit
+            if ((board.isFilled()) && (this.solutionMode==0)){
+                this._doneAnalyzing = true;
+                return;
+            }
+            // get the number of cells covered by the next piece
             listOfMaxPlacements = AnalyzeBoard(board, remQ, remB);
-            for (ChessPiece piece:listOfMaxPlacements) { // create a new board
+            for (ChessPiece piece:listOfMaxPlacements) {
+                // for each piece in the possible placements list render a new board
                 ChessBoard newBoard = new ChessBoard(board.getBoardRows(),board.getBoardCols());
                 newBoard.setChessBoard(board.copyBoard());
                 newBoard.renderNewBoard(piece);
                 listOfNewBoards.add(newBoard);
             }
         }
+        // update the global list of possible solutions
         this._possibleBoards = listOfNewBoards;
     }
 

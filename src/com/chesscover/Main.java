@@ -21,8 +21,15 @@ public class Main {
         numOfQueens = inputScanner.nextInt();
         System.out.print("Number of Bishops (0 for automatic): ");
         numOfBishops = inputScanner.nextInt();
-        // create a CHessManager;
+        // log starting time
+        long startTime = System.nanoTime();
+        // run the algorithm
         ChessManager gameManager = new ChessManager(boardM,boardN,numOfQueens,numOfBishops);
         gameManager.FindSolutions();
+        // log end time
+        long endTime = System.nanoTime();
+        // print time statistics
+        System.out.println("---------------");
+        System.out.println("Done! Finished in " + (endTime-startTime)/1000000 + " ns.");
     }
 }

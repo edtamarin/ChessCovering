@@ -198,7 +198,7 @@ public class ChessBoard {
     public void printBoard(){
         for (int i=0;i<this._numRows;i++){
             for(int j=0;j<this._numCols;j++){
-                System.out.print(this._chessBoard[i][j].getCellType());
+                System.out.print(this._chessBoard[i][j].getCellType()+"|");
             }
             System.out.println();
         }
