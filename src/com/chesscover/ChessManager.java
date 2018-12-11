@@ -44,13 +44,13 @@ public class ChessManager {
     }
 
     //find the possible solutions
-    public void FindSolutions(){
+    public void findSolutions(){
         // run this either until we run out of pieces  of a minimum solution has been found
         if ((this._numQueens>0) || (this._numBishops>0) || ((this.solutionMode == 0) && (!this._doneAnalyzing))) {
             if(this.solutionMode == 0) {
-                AnalyzeBoard(this._numQueens, this._numBishops);
+                analyzeBoard(this._numQueens, this._numBishops);
             }else{
-                AnalyzeBoard(this._numQueens, this._numBishops);
+                analyzeBoard(this._numQueens, this._numBishops);
             }
             // update number of pieces
             if (this._numQueens>0){
@@ -59,7 +59,7 @@ public class ChessManager {
                 this._numBishops--;
             }
             // run the algorithm again
-            FindSolutions();
+            findSolutions();
         }else{ // print the solution
             // find the boards that are filled (correct solutions)
             System.out.println("---------------");
@@ -82,11 +82,21 @@ public class ChessManager {
                 System.out.println(finalBoardArray.size()-1 + " other solutions exist.");
             }
             boardToPrint.printBoard();
+            int queensOnBoard = 0;
+            int bishopsOnBoard = 0;
+            for (ChessPiece piece:boardToPrint.boardToListOfPieces()){
+                if (piece.getCell().getCellType() == 'Q'){
+                    queensOnBoard++;
+                }else if (piece.getCell().getCellType() == 'B'){
+                    bishopsOnBoard++;
+                }
+            }
+            System.out.println(queensOnBoard + " queen(s) and " + bishopsOnBoard + " bishop(s) placed.");
         }
     }
 
     // analyze the board
-    private ArrayList<ChessPiece> AnalyzeBoard(ChessBoard cB, int remQ, int remB){
+    private ArrayList<ChessPiece> analyzeBoard(ChessBoard cB, int remQ, int remB){
         BoardCell[][] bufferBoard = cB.copyBoard();
         ArrayList<CoverInfo> coverPositions = new ArrayList<>();
         ArrayList<ChessPiece> maximumCoverPositions = new ArrayList<>();
@@ -103,7 +113,7 @@ public class ChessManager {
             for (int j = 0; j < cB.getBoardCols(); j++) {
                 if (!cB.getChessBoard()[i][j].containsPiece()){
                     // find the piece position that covers the most cells
-                    cCovered = AnalyzePiecePlacement(bufferBoard,pieceType, i, j);
+                    cCovered = analyzePiecePlacement(bufferBoard,pieceType, i, j);
                     if (bufferBoard[i][j].getNumOfAttacks() == 0){
                         cCovered++;
                     }
@@ -126,7 +136,7 @@ public class ChessManager {
         return maximumCoverPositions;
     }
 
-    private void AnalyzeBoard(int remQ, int remB){
+    private void analyzeBoard(int remQ, int remB){
         ArrayList<ChessPiece> listOfMaxPlacements;
         ArrayList<ChessBoard> listOfNewBoards = new ArrayList<>();
         for (ChessBoard board:this._possibleBoards){ // check each possible board
@@ -136,7 +146,7 @@ public class ChessManager {
                 return;
             }
             // get the number of cells covered by the next piece
-            listOfMaxPlacements = AnalyzeBoard(board, remQ, remB);
+            listOfMaxPlacements = analyzeBoard(board, remQ, remB);
             for (ChessPiece piece:listOfMaxPlacements) {
                 // for each piece in the possible placements list render a new board
                 ChessBoard newBoard = new ChessBoard(board.getBoardRows(),board.getBoardCols());
@@ -145,53 +155,53 @@ public class ChessManager {
                 listOfNewBoards.add(newBoard);
             }
         }
+        printLogMessage("Iteration complete, " + listOfNewBoards.size() + " new boards created.");
         // update the global list of possible solutions
         this._possibleBoards = listOfNewBoards;
     }
 
-    private int AnalyzePiecePlacement(BoardCell[][] anBoard, char type, int rPos,int cPos){
+    private int analyzePiecePlacement(BoardCell[][] board, char type, int rPos, int cPos){
         int cellsCovered = 0;
         // check down direction
-        //anBoard[rPos][cPos] = 'Q';
         // only check horizontal/vertical for a queen
         if (type == 'Q') {
             //check down
             for (int i = rPos + 1; i < _chessBoard.getBoardRows(); i++) {
-                if (anBoard[i][cPos].getCellType() == '*') {
-                    cellsCovered++;
-                    anBoard[i][cPos].setCellType('+');
+                if (board[i][cPos].getCellType() == '*') {
+                    cellsCovered++; // if cell fits description, it's covered
+                    board[i][cPos].setCellType('+');
                 }
-                if (anBoard[i][cPos].containsPiece()){
-                    break;
+                if (board[i][cPos].containsPiece()){
+                    break; // if we hit a piece stop
                 }
             }
             //check up
             for (int i = rPos - 1; i >= 0; i--) {
-                if (anBoard[i][cPos].getCellType() == '*') {
+                if (board[i][cPos].getCellType() == '*') {
+                    board[i][cPos].setCellType('+');
                     cellsCovered++;
-                    anBoard[i][cPos].setCellType('+');
                 }
-                if (anBoard[i][cPos].containsPiece()){
+                if (board[i][cPos].containsPiece()){
                     break;
                 }
             }
             //check right
             for (int i = cPos + 1; i < _chessBoard.getBoardCols(); i++) {
-                if (anBoard[rPos][i].getCellType() == '*') {
+                if (board[rPos][i].getCellType() == '*') {
                     cellsCovered++;
-                    anBoard[rPos][i].setCellType('+');
+                    board[rPos][i].setCellType('+');
                 }
-                if (anBoard[rPos][i].containsPiece()){
+                if (board[rPos][i].containsPiece()){
                     break;
                 }
             }
             //check left
             for (int i = cPos - 1; i >= 0; i--) {
-                if (anBoard[rPos][i].getCellType() == '*') {
+                if (board[rPos][i].getCellType() == '*') {
                     cellsCovered++;
-                    anBoard[rPos][i].setCellType('+');
+                    board[rPos][i].setCellType('+');
                 }
-                if (anBoard[rPos][i].containsPiece()){
+                if (board[rPos][i].containsPiece()){
                     break;
                 }
             }
@@ -200,58 +210,65 @@ public class ChessManager {
         // for SE and SW diagonals they should fit the identity matrix
         // with the indices shifted by row and column indices
         // check NE diagonal
-        outerloop1:
+        NEloop:
         for (int i=rPos-1;i>=0;i--){
-            for (int j=cPos+1;j<_chessBoard.getBoardCols();j++){
-                if ((anBoard[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
+            for (int j=cPos+1;j<_chessBoard.getBoardCols();j++){ // if cell fits description, it's covered
+                if ((board[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
                     cellsCovered++;
-                    anBoard[i][j].setCellType('+');
+                    board[i][j].setCellType('+');
                 }
-                if (anBoard[i][j].containsPiece() && (i+j==rPos+cPos)){
-                    break outerloop1;
+                if (board[i][j].containsPiece() && (i+j==rPos+cPos)){
+                    break NEloop; // if we hit a piece stop
                 }
             }
         }
         // check SE diagonal
-        outerloop2:
+        SEloop:
         for (int i=rPos+1;i<_chessBoard.getBoardRows();i++){
             for (int j=cPos+1;j<_chessBoard.getBoardCols();j++){
-                if ((anBoard[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
+                if ((board[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
                     cellsCovered++;
-                    anBoard[i][j].setCellType('+');
+                    board[i][j].setCellType('+');
                 }
-                if (anBoard[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
-                    break outerloop2;
+                if (board[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
+                    break SEloop; // if we hit a piece stop
                 }
             }
         }
         // check NW diagonal
-        outerloop3:
+        NWloop:
         for (int i=rPos-1;i>=0;i--){
             for (int j=cPos-1;j>=0;j--){
-                if ((anBoard[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
+                if ((board[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
                     cellsCovered++;
-                    anBoard[i][j].setCellType('+');
+                    board[i][j].setCellType('+');
                 }
-                if (anBoard[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
-                    break outerloop3;
+                if (board[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
+                    break NWloop; // if we hit a piece stop
                 }
             }
         }
         // check SW diagonal
-        outerloop4:
+        SWloop:
         for (int i=rPos+1;i<_chessBoard.getBoardRows();i++){
             for (int j=cPos-1;j>=0;j--){
-                if ((anBoard[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
+                if ((board[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
                     cellsCovered++;
-                    anBoard[i][j].setCellType('+');
+                    board[i][j].setCellType('+');
                 }
-                if (anBoard[i][j].containsPiece() && (i+j==rPos+cPos)){
-                    break outerloop4;
+                if (board[i][j].containsPiece() && (i+j==rPos+cPos)){
+                    break SWloop; // if we hit a piece stop
                 }
             }
         }
         return cellsCovered;
+    }
+
+    // logging method
+    // for boards with high execution time provides a larger insight into how the program runs.
+    public static void printLogMessage(String message){
+        System.out.print("[LOG] [T:" + ((System.nanoTime()-Main.startTime)/1000000) + " ns] \t");
+        System.out.println(message);
     }
 }
 

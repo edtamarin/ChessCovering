@@ -1,9 +1,7 @@
 /*
-    Manage chess pieces: keep track of ones that are on the board and analyze specific pieces
+    Manage and analyze existing chess pieces
  */
 package com.chesscover;
-
-import java.util.ArrayList;
 
 public class ChessPiece{
 
@@ -19,7 +17,6 @@ public class ChessPiece{
     private BoardCell _pieceCell;
     private int _pieceRow;
     private int _pieceColumn;
-    private static ArrayList<ChessPiece> _listOfAllPieces = new ArrayList<>();
 
     public ChessPiece(BoardCell cell, int x, int y){
         _pieceCell = cell;
@@ -27,15 +24,8 @@ public class ChessPiece{
         _pieceColumn = y;
     }
 
-    public static void AddPiece(BoardCell cell, int x, int y){
-        _listOfAllPieces.add(new ChessPiece(cell,x,y));
-    }
-
-    public static void DelPiece(ChessPiece piece){
-        _listOfAllPieces.remove(piece);
-    }
-
     // find out if there is a piece in any one of the next cells
+    // placing two similar pieces next to each other on covering positions often isn't efficient
     public static boolean isNearby(BoardCell[][] testBoard, char type, int rowC, int colC){
         int boardRows = testBoard.length;
         int boardCols = testBoard[0].length;
@@ -57,10 +47,6 @@ public class ChessPiece{
             }
         }
         return false;
-    }
-
-    public static ArrayList<ChessPiece> getListOfPieces(){
-        return _listOfAllPieces;
     }
 
     public int getRow(){

@@ -1,5 +1,5 @@
 /*
-    Manage the chess board and provide a wrapped for all the other classes to use.
+    Manage the chess board.
  */
 package com.chesscover;
 
@@ -20,13 +20,14 @@ public class ChessBoard {
     public boolean isFilled(){
         for (int i=0;i<this._numRows;i++){
             for (int j=0;j<this._numCols;j++){
-                if (this._chessBoard[i][j].getCellType() == '*') return false;
+                if (this.getChessBoardCell(i,j) == '*') return false;
             }
         }
         return true;
     }
 
     // copy the board
+    // this is needed so the board is not passed by reference, so we do a deep copy
     public BoardCell[][] copyBoard(){
         BoardCell[][] target = new BoardCell[_numRows][_numCols];
         for (int n=0;n<this._numRows;n++){
@@ -38,6 +39,8 @@ public class ChessBoard {
         return target;
     }
 
+    // scrape the pieces on a provided board into a list
+    // easier to work with than a global storage since pieces are stored on boards anyway
     public ArrayList<ChessPiece> boardToListOfPieces(){
         ArrayList<ChessPiece> piecesOnBoard = new ArrayList<>();
         for (int i=0;i<this._numRows;i++){
@@ -63,17 +66,14 @@ public class ChessBoard {
     // analyze the piece placement
     public void renderNewBoard(ChessPiece providedPiece){
         ArrayList<ChessPiece> listOfPieces;
-        if (providedPiece != null){ // simulating the optional parameter
-            listOfPieces = this.boardToListOfPieces();
-            listOfPieces.add(providedPiece);
-        }else {
-            listOfPieces = ChessPiece.getListOfPieces();
-        }
+        listOfPieces = this.boardToListOfPieces(); // get the pieces on a board
+        listOfPieces.add(providedPiece); // add a new piece to the list
         this.emptyBoard(); // empty the board
         for (ChessPiece piece:listOfPieces) { // place pieces on board
             this._chessBoard[piece.getRow()][piece.getCol()].setCellType(piece.getCell().getCellType());
         }
         for (ChessPiece piece:listOfPieces) { // radiate from each piece
+            // horizontals and verticals are only covered by queens
             if (piece.getCell().getCellType() == 'Q') {
                 analyzeHorizontal(piece);
                 analyzeVertical(piece);
@@ -169,30 +169,32 @@ public class ChessBoard {
         return 0;
     }
 
+    // check cell availability on the NE-SW diagonal
     private int checkPieceConditionsNE_SW(ChessPiece pieceToCheck, int rowIndex, int colIndex){
         if (rowIndex+colIndex==pieceToCheck.getRow()+pieceToCheck.getCol()) {
-            if ((!this._chessBoard[rowIndex][colIndex].containsPiece())) {
-                this._chessBoard[rowIndex][colIndex].setAttackedByMore();
-                this._chessBoard[rowIndex][colIndex].setCellType('+');
-            } else { // if not stop, but still increase number of attacks
-                this._chessBoard[rowIndex][colIndex].setAttackedByMore();
-                return 1;
-            }
+            if (diagonalConditionsCheck(rowIndex, colIndex)) return 1;
         }
         return 0;
     }
 
+    // check cell availability on the NW-SE diagonal
     private int checkPieceConditionsNW_SE(ChessPiece pieceToCheck, int rowIndex, int colIndex){
         if ((rowIndex-pieceToCheck.getRow())==(colIndex-pieceToCheck.getCol())) {
-            if ((!this._chessBoard[rowIndex][colIndex].containsPiece())) {
-                this._chessBoard[rowIndex][colIndex].setAttackedByMore();
-                this._chessBoard[rowIndex][colIndex].setCellType('+');
-            } else { // if not stop, but still increase number of attacks
-                this._chessBoard[rowIndex][colIndex].setAttackedByMore();
-                return 1;
-            }
+            if (diagonalConditionsCheck(rowIndex, colIndex)) return 1;
         }
         return 0;
+    }
+
+    // cell processing for diagonals is the same, extracted to prevent repetitions
+    private boolean diagonalConditionsCheck(int rowIndex, int colIndex) {
+        if ((!this._chessBoard[rowIndex][colIndex].containsPiece())) {
+            this._chessBoard[rowIndex][colIndex].setAttackedByMore();
+            this._chessBoard[rowIndex][colIndex].setCellType('+');
+        } else { // if not stop, but still increase number of attacks
+            this._chessBoard[rowIndex][colIndex].setAttackedByMore();
+            return true;
+        }
+        return false;
     }
 
     public void printBoard(){
@@ -202,6 +204,7 @@ public class ChessBoard {
             }
             System.out.println();
         }
+        System.out.println();
     }
 
     public BoardCell[][] getChessBoard(){

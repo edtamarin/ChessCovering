@@ -4,6 +4,8 @@ import java.util.Scanner;
 
 public class Main {
 
+    static long startTime;
+
     public static void main(String[] args) {
         int boardM;
         int boardN;
@@ -21,11 +23,13 @@ public class Main {
         numOfQueens = inputScanner.nextInt();
         System.out.print("Number of Bishops (0 for automatic): ");
         numOfBishops = inputScanner.nextInt();
+        System.out.println("---------------");
+        System.out.println("Search started.");
         // log starting time
-        long startTime = System.nanoTime();
+        startTime = System.nanoTime();
         // run the algorithm
         ChessManager gameManager = new ChessManager(boardM,boardN,numOfQueens,numOfBishops);
-        gameManager.FindSolutions();
+        gameManager.findSolutions();
         // log end time
         long endTime = System.nanoTime();
         // print time statistics

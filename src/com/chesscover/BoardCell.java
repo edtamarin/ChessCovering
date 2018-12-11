@@ -1,3 +1,6 @@
+/*
+    An individual board cell, basic functionality.
+ */
 package com.chesscover;
 
 public class BoardCell {
@@ -24,10 +27,6 @@ public class BoardCell {
 
     public void setAttackedByMore(){
         this._numOfAttacks++;
-    }
-
-    public void setAttackedByLess(){
-        this._numOfAttacks--;
     }
 
     public void setCellType(char type){
