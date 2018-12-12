@@ -10,9 +10,9 @@ public class ChessPiece{
             { 0, -1},          { 0, +1},
             {+1, -1}, {+1, 0}, {+1, +1}};
 
-    private static final int[][] B_NEIGHBOURS = {
+    /*private static final int[][] B_NEIGHBOURS = {
             {-1, -1},          {-1, +1},
-            {+1, -1},          {+1, +1}};
+            {+1, -1},          {+1, +1}};*/
 
     private BoardCell _pieceCell;
     private int _pieceRow;
@@ -37,7 +37,8 @@ public class ChessPiece{
                     }
                 }
             }
-        }else{ // bishop neighbours
+        }
+        /*else{ // bishop neighbours
             for (int[] offset : B_NEIGHBOURS) {
                 if (((rowC + offset[0] >= 0) && (colC + offset[1] >= 0)) && ((rowC + offset[0] < boardRows) && (colC + offset[1] < boardCols))) {
                     if (testBoard[rowC + offset[0]][colC + offset[1]].getCellType() == type) {
@@ -45,7 +46,7 @@ public class ChessPiece{
                     }
                 }
             }
-        }
+        }*/
         return false;
     }
 

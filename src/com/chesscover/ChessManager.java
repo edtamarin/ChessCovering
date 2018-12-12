@@ -5,7 +5,9 @@
 package com.chesscover;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class ChessManager {
 
@@ -62,11 +64,18 @@ public class ChessManager {
             findSolutions();
         }else{ // print the solution
             // find the boards that are filled (correct solutions)
+            int numOfDistinctBoards = 0;
+            System.out.println();
             System.out.println("---------------");
             ArrayList<ChessBoard> finalBoardArray = new ArrayList<>();
-            for (ChessBoard board:this._possibleBoards){
-                if (board.isFilled()) finalBoardArray.add(board);
+            for (ChessBoard board : this._possibleBoards) {
+                if (board.isFilled()) {
+                    finalBoardArray.add(board);
+                }
             }
+            // count unique solutions
+            // the array of solutions contains duplicates
+            numOfDistinctBoards = countUniqueSolutions(finalBoardArray);
             // if no solution found notify user
             if (finalBoardArray.size() == 0){
                 System.out.println("No valid solution found!");
@@ -79,9 +88,10 @@ public class ChessManager {
             System.out.println("Solution found!");
             System.out.println();
             if (this.solutionMode == 1) { // if manual search, print how many possibilities found
-                System.out.println(finalBoardArray.size()-1 + " other solutions exist.");
+                System.out.println(numOfDistinctBoards-1 + " other solutions exist.");
             }
             boardToPrint.printBoard();
+            // count queens and bishops
             int queensOnBoard = 0;
             int bishopsOnBoard = 0;
             for (ChessPiece piece:boardToPrint.boardToListOfPieces()){
@@ -263,6 +273,24 @@ public class ChessManager {
         }
         return cellsCovered;
     }
+
+    // get rid of duplicates by placing the stringified boards in a Set
+    // sets disallow duplicates
+    private int countUniqueSolutions(ArrayList<ChessBoard> boardArray){
+        String boardString = "";
+        Set<String> boardHashSet = new HashSet<>();
+        for (ChessBoard board: boardArray) {
+            for (int i = 0; i <board.getBoardRows(); i++) {
+                for (int j = 0; j < board.getBoardCols(); j++) {
+                    boardString = boardString + board.getChessBoardCell(i,j);
+                }
+            }
+            boardHashSet.add(boardString);
+            boardString = "";
+        }
+        return boardHashSet.size();
+    }
+
 
     // logging method
     // for boards with high execution time provides a larger insight into how the program runs.
