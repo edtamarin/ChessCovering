@@ -133,7 +133,7 @@ public class ChessManager {
                         cCoveredMax = cCovered;
                         coverPositions.add(new CoverInfo(cCovered,new ChessPiece(new BoardCell(pieceType),i,j)));
                     }
-                    bufferBoard = cB.copyBoard();
+                    //bufferBoard = cB.copyBoard();
                 }
             }
         }
@@ -179,7 +179,7 @@ public class ChessManager {
             for (int i = rPos + 1; i < _chessBoard.getBoardRows(); i++) {
                 if (board[i][cPos].getCellType() == '*') {
                     cellsCovered++; // if cell fits description, it's covered
-                    board[i][cPos].setCellType('+');
+                    //board[i][cPos].setCellType('+');
                 }
                 if (board[i][cPos].containsPiece()){
                     break; // if we hit a piece stop
@@ -188,7 +188,7 @@ public class ChessManager {
             //check up
             for (int i = rPos - 1; i >= 0; i--) {
                 if (board[i][cPos].getCellType() == '*') {
-                    board[i][cPos].setCellType('+');
+                    //board[i][cPos].setCellType('+');
                     cellsCovered++;
                 }
                 if (board[i][cPos].containsPiece()){
@@ -199,7 +199,7 @@ public class ChessManager {
             for (int i = cPos + 1; i < _chessBoard.getBoardCols(); i++) {
                 if (board[rPos][i].getCellType() == '*') {
                     cellsCovered++;
-                    board[rPos][i].setCellType('+');
+                    //[rPos][i].setCellType('+');
                 }
                 if (board[rPos][i].containsPiece()){
                     break;
@@ -209,7 +209,7 @@ public class ChessManager {
             for (int i = cPos - 1; i >= 0; i--) {
                 if (board[rPos][i].getCellType() == '*') {
                     cellsCovered++;
-                    board[rPos][i].setCellType('+');
+                    //board[rPos][i].setCellType('+');
                 }
                 if (board[rPos][i].containsPiece()){
                     break;
@@ -225,7 +225,7 @@ public class ChessManager {
             for (int j=cPos+1;j<_chessBoard.getBoardCols();j++){ // if cell fits description, it's covered
                 if ((board[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
                     cellsCovered++;
-                    board[i][j].setCellType('+');
+                    //board[i][j].setCellType('+');
                 }
                 if (board[i][j].containsPiece() && (i+j==rPos+cPos)){
                     break NEloop; // if we hit a piece stop
@@ -238,7 +238,7 @@ public class ChessManager {
             for (int j=cPos+1;j<_chessBoard.getBoardCols();j++){
                 if ((board[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
                     cellsCovered++;
-                    board[i][j].setCellType('+');
+                    //board[i][j].setCellType('+');
                 }
                 if (board[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
                     break SEloop; // if we hit a piece stop
@@ -251,7 +251,7 @@ public class ChessManager {
             for (int j=cPos-1;j>=0;j--){
                 if ((board[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
                     cellsCovered++;
-                    board[i][j].setCellType('+');
+                    //board[i][j].setCellType('+');
                 }
                 if (board[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
                     break NWloop; // if we hit a piece stop
@@ -264,7 +264,7 @@ public class ChessManager {
             for (int j=cPos-1;j>=0;j--){
                 if ((board[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
                     cellsCovered++;
-                    board[i][j].setCellType('+');
+                    //board[i][j].setCellType('+');
                 }
                 if (board[i][j].containsPiece() && (i+j==rPos+cPos)){
                     break SWloop; // if we hit a piece stop
@@ -295,11 +295,13 @@ public class ChessManager {
     // logging method
     // for boards with high execution time provides a larger insight into how the program runs.
     public static void printLogMessage(String message){
-        System.out.print("[LOG] [T:" + ((System.nanoTime()-Main.startTime)/1000000) + " ns] \t");
+        System.out.print("[LOG] [T:" + ((System.nanoTime()-Main.startTime)/1000000) + " ms] \t");
         System.out.println(message);
     }
 }
 
+
+// data structure class
 class CoverInfo{
     int positionsCovered;
     ChessPiece coveringPiece;
