@@ -4,6 +4,9 @@
 package com.chesscover;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ChessBoard {
 
@@ -39,6 +42,28 @@ public class ChessBoard {
         return target;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        //if (this == o) return true;
+        //if (o == null || getClass() != o.getClass()) return false;
+        ChessBoard board = (ChessBoard) o;
+        return Arrays.deepEquals(_chessBoard, board._chessBoard);
+    }
+
+    @Override
+    public int hashCode() {
+       return Arrays.hashCode(_chessBoard);
+    }
+
+    public static ArrayList<ChessBoard> removeDuplicates(ArrayList<ChessBoard> dupesList){
+        Set<ChessBoard> finalSet = new HashSet<>();
+        ArrayList<ChessBoard> finalList = new ArrayList<>(dupesList);
+        finalSet.addAll(finalList);
+        finalList.clear();
+        finalList.addAll(finalSet);
+        return finalList;
+    }
+
     // scrape the pieces on a provided board into a list
     // easier to work with than a global storage since pieces are stored on boards anyway
     public ArrayList<ChessPiece> boardToListOfPieces(){
@@ -64,14 +89,13 @@ public class ChessBoard {
     }
 
     // analyze the piece placement
-    public void renderNewBoard(ChessPiece providedPiece){
+    public void renderNewBoard(){
         ArrayList<ChessPiece> listOfPieces;
         listOfPieces = this.boardToListOfPieces(); // get the pieces on a board
-        listOfPieces.add(providedPiece); // add a new piece to the list
-        this.emptyBoard(); // empty the board
-        for (ChessPiece piece:listOfPieces) { // place pieces on board
-            this._chessBoard[piece.getRow()][piece.getCol()].setCellType(piece.getCell().getCellType());
-        }
+        //this.emptyBoard(); // empty the board
+        //for (ChessPiece piece:listOfPieces) { // place pieces on board
+        //    this._chessBoard[piece.getRow()][piece.getCol()].setCellType(piece.getCell().getCellType());
+        //}
         for (ChessPiece piece:listOfPieces) { // radiate from each piece
             // horizontals and verticals are only covered by queens
             if (piece.getCell().getCellType() == 'Q') {

@@ -4,10 +4,7 @@
  */
 package com.chesscover;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class ChessManager {
 
@@ -44,6 +41,63 @@ public class ChessManager {
         _possibleBoards.add(_chessBoard);
         _numberGenerator = new Random();
     }
+ /*
+    public void findSolutions(){
+        int numSol = recurse(_chessBoard,0,_chessBoard.getBoardCols()*_chessBoard.getBoardRows(),0,0);
+        int numOfDistinctBoards = countUniqueSolutions(this._possibleBoards);
+        // if no solution found notify user
+        if (this._possibleBoards.size() == 0){
+            System.out.println("No valid solution found!");
+            System.out.println("Change chesspiece data and try again.");
+            return;
+        }
+        // pick a random board to print
+        int boardIndex = _numberGenerator.nextInt(this._possibleBoards.size());
+        ChessBoard boardToPrint = this._possibleBoards.get(boardIndex);
+        System.out.println("Solution found!");
+        System.out.println();
+        if (this.solutionMode == 1) { // if manual search, print how many possibilities found
+            System.out.println(numOfDistinctBoards-1 + " other solutions exist.");
+        }
+        boardToPrint.printBoard();
+        // count queens and bishops
+        int queensOnBoard = 0;
+        int bishopsOnBoard = 0;
+        for (ChessPiece piece:boardToPrint.boardToListOfPieces()){
+            if (piece.getCell().getCellType() == 'Q'){
+                queensOnBoard++;
+            }else if (piece.getCell().getCellType() == 'B'){
+                bishopsOnBoard++;
+            }
+        }
+        System.out.println(queensOnBoard + " queen(s) and " + bishopsOnBoard + " bishop(s) placed.");
+    }
+
+    int recurse(ChessBoard board, int i, int n, int remQ, int remB){
+        if ((i==n) || ((remQ == _numQueens) && (remB == _numBishops)&& (this.solutionMode == 1)) || ((remQ == _numQueens) && (this.solutionMode == 0))){
+            board.renderNewBoard();
+            int state = board.isFilled() ? 1:0;
+            if (state == 1) this._possibleBoards.add(board);
+            return state;
+        }
+        int x = i / board.getChessBoard().length;
+        int y = i % board.getChessBoard().length;
+        int solutions = 0;
+        //Place a queen in the current spot.
+        if(remQ < _numQueens) {
+            board.getChessBoard()[x][y].setCellType('Q');
+            solutions += recurse(board, i+1, n, remQ + 1, remB);
+        }
+        //Place a bishop in the current spot.
+        if(remB < _numBishops) {
+            board.getChessBoard()[x][y].setCellType('B');
+            solutions += recurse(board, i+1, n, remQ, remB + 1);
+        }
+        //Place nothing in the current spot.
+        board.getChessBoard()[x][y].setCellType('*');
+        solutions += recurse(board, i+1, n, remQ, remB);
+        return solutions;
+    } */
 
     //find the possible solutions
     public void findSolutions(){
@@ -64,13 +118,19 @@ public class ChessManager {
             findSolutions();
         }else{ // print the solution
             // find the boards that are filled (correct solutions)
+            ArrayList<ChessBoard> noDupes = ChessBoard.removeDuplicates(this._possibleBoards);
             int numOfDistinctBoards = 0;
-            System.out.println();
+            printLogMessage("Starting board render");
+            for (ChessBoard board:noDupes){
+                board.renderNewBoard();
+            }
+            //System.out.println();
             System.out.println("---------------");
             ArrayList<ChessBoard> finalBoardArray = new ArrayList<>();
-            for (ChessBoard board : this._possibleBoards) {
+            for (ChessBoard board : noDupes) {
                 if (board.isFilled()) {
                     finalBoardArray.add(board);
+                    //board.printBoard();
                 }
             }
             // count unique solutions
@@ -104,7 +164,7 @@ public class ChessManager {
             System.out.println(queensOnBoard + " queen(s) and " + bishopsOnBoard + " bishop(s) placed.");
         }
     }
-
+    /*
     // analyze the board
     private ArrayList<ChessPiece> analyzeBoard(ChessBoard cB, int remQ, int remB){
         BoardCell[][] bufferBoard = cB.copyBoard();
@@ -167,6 +227,33 @@ public class ChessManager {
         }
         printLogMessage("Iteration complete, " + listOfNewBoards.size() + " new boards created.");
         // update the global list of possible solutions
+        this._possibleBoards = listOfNewBoards;
+    }*/
+
+    private void analyzeBoard(int remQ, int remB){
+        ArrayList<ChessBoard> listOfNewBoards = new ArrayList<>();
+        char pieceType = ' ';
+        if (remQ>0){
+            pieceType = 'Q';
+        } else if ((remB>0) || (this.solutionMode == 0)) pieceType = 'B';
+        for (ChessBoard board:this._possibleBoards) {
+            //if ((board.isFilled()) && (this.solutionMode==0)){
+            //    this._doneAnalyzing = true;
+            //    return;
+            //}
+            for (int i = 0; i < board.getBoardRows(); i++) {
+                for (int j = 0; j < board.getBoardCols(); j++) {
+                    if (!board.getChessBoard()[i][j].containsPiece()){
+                        ChessBoard newBoard = new ChessBoard(board.getBoardRows(),board.getBoardCols());
+                        newBoard.setChessBoard(board.copyBoard());
+                        newBoard.getChessBoard()[i][j].setCellType(pieceType);
+                        newBoard.renderNewBoard();
+                        listOfNewBoards.add(newBoard);
+                    }
+                }
+            }
+        }
+        printLogMessage("Iteration complete. " + listOfNewBoards.size() + " possible boards exist.");
         this._possibleBoards = listOfNewBoards;
     }
 
@@ -295,7 +382,7 @@ public class ChessManager {
     // logging method
     // for boards with high execution time provides a larger insight into how the program runs.
     public static void printLogMessage(String message){
-        System.out.print("[LOG] [T:" + ((System.nanoTime()-Main.startTime)/1000000) + " ns] \t");
+        System.out.print("[LOG] [T:" + ((System.nanoTime()-Main.startTime)/1000000) + " ms] \t");
         System.out.println(message);
     }
 }

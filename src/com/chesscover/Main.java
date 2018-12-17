@@ -34,6 +34,6 @@ public class Main {
         long endTime = System.nanoTime();
         // print time statistics
         System.out.println("---------------");
-        System.out.println("Done! Finished in " + (endTime-startTime)/1000000 + " ns.");
+        System.out.println("Done! Finished in " + (endTime-startTime)/1000000 + " ms.");
     }
 }
