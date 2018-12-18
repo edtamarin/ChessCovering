@@ -12,11 +12,12 @@ public class Main {
         int numOfQueens;
         int numOfBishops;
         // get user input
+        System.out.println();
         System.out.println("Enter the board dimensions (M*N):");
-        System.out.print("M (rows): ");
+        System.out.print("Number of rows: ");
         Scanner inputScanner = new Scanner(System.in);
         boardM = inputScanner.nextInt();
-        System.out.print("N (cols): ");
+        System.out.print("Number of columns: ");
         boardN = inputScanner.nextInt();
         System.out.println("Enter chesspiece data:");
         System.out.print("Number of Queens: ");
