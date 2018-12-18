@@ -1,10 +1,7 @@
-/*
-    The manager class handling the analysis and board operations.
-    Egor Tamarin, 2018
- */
 package com.chesscover;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class ChessManager {
 
@@ -12,387 +9,104 @@ public class ChessManager {
     private int _numQueens;
     private int _numBishops;
     private int solutionMode;
-    private boolean _doneAnalyzing = false;
-    private ArrayList<ChessBoard> _possibleBoards = new ArrayList<>();
-    private Random _numberGenerator;
+    private int _minNumBishops;
+    private ArrayList<ChessBoard> listOfPossibleSolutions = new ArrayList<>();
+    private Random _numberGenerator = new Random();
+    ChessBoard boardToPrint;
 
-    public ChessManager(int m, int n, int nQ, int nB){
-        _chessBoard = new ChessBoard(m,n);
-        _numQueens = nQ;
-        _numBishops = nB;
-        // fill the chess board
-        // * - empty cell
-        // + - under attack
-        // Q/B - Queen or Bishop
-        for (int i=0; i<m; i++){
-            for (int j=0; j<n; j++){
-                _chessBoard.getChessBoard()[i][j] = new BoardCell('*');
-            }
-        }
-        // set the mode for solutions
-        // 0 is automatic
-        // 1 is with user-provided number of bishops
-        if (nB == 0){
-            solutionMode = 0;
-        }else{
-            solutionMode = 1;
-
-        }
-        _possibleBoards.add(_chessBoard);
-        _numberGenerator = new Random();
+    public ChessManager(int numOfQueens, int numOfBishops, int boardRows, int boardCols){
+        _numQueens = numOfQueens;
+        _numBishops = numOfBishops;
+        _chessBoard = new ChessBoard(boardRows,boardCols);
+        _minNumBishops = boardRows*boardCols;
+        solutionMode = 1;
+        if (numOfBishops == -1) solutionMode = 0;
     }
- /*
+
     public void findSolutions(){
-        int numSol = recurse(_chessBoard,0,_chessBoard.getBoardCols()*_chessBoard.getBoardRows(),0,0);
-        int numOfDistinctBoards = countUniqueSolutions(this._possibleBoards);
-        // if no solution found notify user
-        if (this._possibleBoards.size() == 0){
+        try {
+            if(solutionMode ==1){
+                analyzeBoard(0, 0, 0);
+            }else{
+                analyzeBoard(0, 0, Math.max(_chessBoard.getNumCols(),_chessBoard.getNumRows()));
+            }
+        }catch (SolutionFoundException e) {
+        }
+        System.out.println("---------------");
+        if (listOfPossibleSolutions.size() == 0){
             System.out.println("No valid solution found!");
             System.out.println("Change chesspiece data and try again.");
             return;
         }
-        // pick a random board to print
-        int boardIndex = _numberGenerator.nextInt(this._possibleBoards.size());
-        ChessBoard boardToPrint = this._possibleBoards.get(boardIndex);
+        if (solutionMode == 0){
+            for (ChessBoard board:listOfPossibleSolutions){
+                if (board.getNumOfBishops() == _minNumBishops) boardToPrint = board;
+            }
+        }else {
+            int boardIndex = _numberGenerator.nextInt(listOfPossibleSolutions.size());
+            boardToPrint = listOfPossibleSolutions.get(boardIndex);
+        }
         System.out.println("Solution found!");
         System.out.println();
         if (this.solutionMode == 1) { // if manual search, print how many possibilities found
-            System.out.println(numOfDistinctBoards-1 + " other solutions exist.");
+            System.out.println(listOfPossibleSolutions.size()-1 + " other solutions exist.");
         }
         boardToPrint.printBoard();
         // count queens and bishops
         int queensOnBoard = 0;
         int bishopsOnBoard = 0;
         for (ChessPiece piece:boardToPrint.boardToListOfPieces()){
-            if (piece.getCell().getCellType() == 'Q'){
+            if (piece.getPieceType().equals("Q")){
                 queensOnBoard++;
-            }else if (piece.getCell().getCellType() == 'B'){
+            }else if (piece.getPieceType().equals("B")){
                 bishopsOnBoard++;
             }
         }
         System.out.println(queensOnBoard + " queen(s) and " + bishopsOnBoard + " bishop(s) placed.");
     }
 
-    int recurse(ChessBoard board, int i, int n, int remQ, int remB){
-        if ((i==n) || ((remQ == _numQueens) && (remB == _numBishops)&& (this.solutionMode == 1)) || ((remQ == _numQueens) && (this.solutionMode == 0))){
-            board.renderNewBoard();
-            int state = board.isFilled() ? 1:0;
-            if (state == 1) this._possibleBoards.add(board);
-            return state;
-        }
-        int x = i / board.getChessBoard().length;
-        int y = i % board.getChessBoard().length;
-        int solutions = 0;
-        //Place a queen in the current spot.
-        if(remQ < _numQueens) {
-            board.getChessBoard()[x][y].setCellType('Q');
-            solutions += recurse(board, i+1, n, remQ + 1, remB);
-        }
-        //Place a bishop in the current spot.
-        if(remB < _numBishops) {
-            board.getChessBoard()[x][y].setCellType('B');
-            solutions += recurse(board, i+1, n, remQ, remB + 1);
-        }
-        //Place nothing in the current spot.
-        board.getChessBoard()[x][y].setCellType('*');
-        solutions += recurse(board, i+1, n, remQ, remB);
-        return solutions;
-    } */
-
-    //find the possible solutions
-    public void findSolutions(){
-        // run this either until we run out of pieces  of a minimum solution has been found
-        if ((this._numQueens>0) || (this._numBishops>0) || ((this.solutionMode == 0) && (!this._doneAnalyzing))) {
-            if(this.solutionMode == 0) {
-                analyzeBoard(this._numQueens, this._numBishops);
-            }else{
-                analyzeBoard(this._numQueens, this._numBishops);
-            }
-            // update number of pieces
-            if (this._numQueens>0){
-                this._numQueens--;
-            }else if (this._numBishops>0){
-                this._numBishops--;
-            }
-            // run the algorithm again
-            findSolutions();
-        }else{ // print the solution
-            // find the boards that are filled (correct solutions)
-            ArrayList<ChessBoard> noDupes = ChessBoard.removeDuplicates(this._possibleBoards);
-            int numOfDistinctBoards = 0;
-            printLogMessage("Starting board render");
-            for (ChessBoard board:noDupes){
-                board.renderNewBoard();
-            }
-            //System.out.println();
-            System.out.println("---------------");
-            ArrayList<ChessBoard> finalBoardArray = new ArrayList<>();
-            for (ChessBoard board : noDupes) {
-                if (board.isFilled()) {
-                    finalBoardArray.add(board);
-                    //board.printBoard();
-                }
-            }
-            // count unique solutions
-            // the array of solutions contains duplicates
-            numOfDistinctBoards = countUniqueSolutions(finalBoardArray);
-            // if no solution found notify user
-            if (finalBoardArray.size() == 0){
-                System.out.println("No valid solution found!");
-                System.out.println("Change chesspiece data and try again.");
-                return;
-            }
-            // pick a random board to print
-            int boardIndex = _numberGenerator.nextInt(finalBoardArray.size());
-            ChessBoard boardToPrint = finalBoardArray.get(boardIndex);
-            System.out.println("Solution found!");
-            System.out.println();
-            if (this.solutionMode == 1) { // if manual search, print how many possibilities found
-                System.out.println(numOfDistinctBoards-1 + " other solutions exist.");
-            }
-            boardToPrint.printBoard();
-            // count queens and bishops
-            int queensOnBoard = 0;
-            int bishopsOnBoard = 0;
-            for (ChessPiece piece:boardToPrint.boardToListOfPieces()){
-                if (piece.getCell().getCellType() == 'Q'){
-                    queensOnBoard++;
-                }else if (piece.getCell().getCellType() == 'B'){
-                    bishopsOnBoard++;
-                }
-            }
-            System.out.println(queensOnBoard + " queen(s) and " + bishopsOnBoard + " bishop(s) placed.");
-        }
-    }
-    /*
-    // analyze the board
-    private ArrayList<ChessPiece> analyzeBoard(ChessBoard cB, int remQ, int remB){
-        BoardCell[][] bufferBoard = cB.copyBoard();
-        ArrayList<CoverInfo> coverPositions = new ArrayList<>();
-        ArrayList<ChessPiece> maximumCoverPositions = new ArrayList<>();
-        int cCoveredMax = 0;
-        int cCovered;
-        char pieceType = ' ';
-        if (remQ>0){
-            pieceType = 'Q';
-        }else if ((remB>0) || ((this.solutionMode == 0) && (!cB.isFilled()))){
-            pieceType = 'B';
-        }
-        // iterate over the board
-        for (int i = 0; i < cB.getBoardRows(); i++) {
-            for (int j = 0; j < cB.getBoardCols(); j++) {
-                if (!cB.getChessBoard()[i][j].containsPiece()){
-                    // find the piece position that covers the most cells
-                    cCovered = analyzePiecePlacement(bufferBoard,pieceType, i, j);
-                    if (bufferBoard[i][j].getNumOfAttacks() == 0){
-                        cCovered++;
-                    }
-                    // check if there is a piece nearby before making a decision
-                    // placing a queen near another one is rarely efficient as the 3*3 space is completely covered
-                    if ((cCoveredMax <= cCovered) && (!ChessPiece.isNearby(bufferBoard,pieceType,i,j))){
-                        cCoveredMax = cCovered;
-                        coverPositions.add(new CoverInfo(cCovered,new ChessPiece(new BoardCell(pieceType),i,j)));
-                    }
-                    bufferBoard = cB.copyBoard();
-                }
-            }
-        }
-        // take only the positions with maximum coverage
-        for (CoverInfo info:coverPositions){
-            if (info.positionsCovered >= cCoveredMax-1){
-                maximumCoverPositions.add(info.coveringPiece);
-            }
-        }
-        return maximumCoverPositions;
-    }
-
-    private void analyzeBoard(int remQ, int remB){
-        ArrayList<ChessPiece> listOfMaxPlacements;
-        ArrayList<ChessBoard> listOfNewBoards = new ArrayList<>();
-        for (ChessBoard board:this._possibleBoards){ // check each possible board
-            // if we're in automatic mode and we find a filled board, then a minimum number has been reached, we quit
-            if ((board.isFilled()) && (this.solutionMode==0)){
-                this._doneAnalyzing = true;
-                return;
-            }
-            // get the number of cells covered by the next piece
-            listOfMaxPlacements = analyzeBoard(board, remQ, remB);
-            for (ChessPiece piece:listOfMaxPlacements) {
-                // for each piece in the possible placements list render a new board
-                ChessBoard newBoard = new ChessBoard(board.getBoardRows(),board.getBoardCols());
-                newBoard.setChessBoard(board.copyBoard());
-                newBoard.renderNewBoard(piece);
-                listOfNewBoards.add(newBoard);
-            }
-        }
-        printLogMessage("Iteration complete, " + listOfNewBoards.size() + " new boards created.");
-        // update the global list of possible solutions
-        this._possibleBoards = listOfNewBoards;
-    }*/
-
-    private void analyzeBoard(int remQ, int remB){
-        ArrayList<ChessBoard> listOfNewBoards = new ArrayList<>();
-        char pieceType = ' ';
-        if (remQ>0){
-            pieceType = 'Q';
-        } else if ((remB>0) || (this.solutionMode == 0)) pieceType = 'B';
-        for (ChessBoard board:this._possibleBoards) {
-            //if ((board.isFilled()) && (this.solutionMode==0)){
-            //    this._doneAnalyzing = true;
-            //    return;
-            //}
-            for (int i = 0; i < board.getBoardRows(); i++) {
-                for (int j = 0; j < board.getBoardCols(); j++) {
-                    if (!board.getChessBoard()[i][j].containsPiece()){
-                        ChessBoard newBoard = new ChessBoard(board.getBoardRows(),board.getBoardCols());
-                        newBoard.setChessBoard(board.copyBoard());
-                        newBoard.getChessBoard()[i][j].setCellType(pieceType);
-                        newBoard.renderNewBoard();
-                        listOfNewBoards.add(newBoard);
+    private void analyzeBoard(int iteration, int usedQueens, int usedBishops) throws SolutionFoundException{
+        if ((iteration == this._chessBoard.getNumCols()*this._chessBoard.getNumRows()) ||
+                ((usedQueens==this._numQueens) && (usedBishops==this._numBishops) && (solutionMode == 1)) ||
+                ((usedBishops == 0) && (solutionMode == 0))){
+            ChessBoard possibleSolution = new ChessBoard(this._chessBoard);
+            possibleSolution.renderBoard();
+            if ((possibleSolution.isFilled())) {
+                if (solutionMode == 1) {
+                    listOfPossibleSolutions.add(possibleSolution);
+                }else if (solutionMode == 0){
+                    int bishopsUsed = possibleSolution.getNumOfBishops();
+                    if (bishopsUsed<_minNumBishops){
+                        listOfPossibleSolutions.add(possibleSolution);
+                        _minNumBishops = bishopsUsed;
                     }
                 }
             }
+            return;
         }
-        printLogMessage("Iteration complete. " + listOfNewBoards.size() + " possible boards exist.");
-        this._possibleBoards = listOfNewBoards;
-    }
-
-    private int analyzePiecePlacement(BoardCell[][] board, char type, int rPos, int cPos){
-        int cellsCovered = 0;
-        // check down direction
-        // only check horizontal/vertical for a queen
-        if (type == 'Q') {
-            //check down
-            for (int i = rPos + 1; i < _chessBoard.getBoardRows(); i++) {
-                if (board[i][cPos].getCellType() == '*') {
-                    cellsCovered++; // if cell fits description, it's covered
-                    board[i][cPos].setCellType('+');
-                }
-                if (board[i][cPos].containsPiece()){
-                    break; // if we hit a piece stop
-                }
-            }
-            //check up
-            for (int i = rPos - 1; i >= 0; i--) {
-                if (board[i][cPos].getCellType() == '*') {
-                    board[i][cPos].setCellType('+');
-                    cellsCovered++;
-                }
-                if (board[i][cPos].containsPiece()){
-                    break;
-                }
-            }
-            //check right
-            for (int i = cPos + 1; i < _chessBoard.getBoardCols(); i++) {
-                if (board[rPos][i].getCellType() == '*') {
-                    cellsCovered++;
-                    board[rPos][i].setCellType('+');
-                }
-                if (board[rPos][i].containsPiece()){
-                    break;
-                }
-            }
-            //check left
-            for (int i = cPos - 1; i >= 0; i--) {
-                if (board[rPos][i].getCellType() == '*') {
-                    cellsCovered++;
-                    board[rPos][i].setCellType('+');
-                }
-                if (board[rPos][i].containsPiece()){
-                    break;
-                }
-            }
+        int rowToTest = iteration / this._chessBoard.getBoard().length;
+        int colToTest = iteration % this._chessBoard.getBoard().length;
+        if (usedQueens<_numQueens){
+            this._chessBoard.setCellType("Q",rowToTest,colToTest);
+            analyzeBoard(iteration+1,usedQueens+1,usedBishops);
         }
-        // for NE and NW diagonals the sum of i and j should equal the sum of the piece's coordinates
-        // for SE and SW diagonals they should fit the identity matrix
-        // with the indices shifted by row and column indices
-        // check NE diagonal
-        NEloop:
-        for (int i=rPos-1;i>=0;i--){
-            for (int j=cPos+1;j<_chessBoard.getBoardCols();j++){ // if cell fits description, it's covered
-                if ((board[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
-                    cellsCovered++;
-                    board[i][j].setCellType('+');
-                }
-                if (board[i][j].containsPiece() && (i+j==rPos+cPos)){
-                    break NEloop; // if we hit a piece stop
-                }
+        if (solutionMode == 1){
+            if (usedBishops<_numBishops){
+                this._chessBoard.setCellType("B",rowToTest,colToTest);
+                analyzeBoard(iteration+1,usedQueens,usedBishops+1);
             }
+        }else{
+            this._chessBoard.setCellType("B",rowToTest,colToTest);
+            analyzeBoard(iteration+1,usedQueens,usedBishops-1);
         }
-        // check SE diagonal
-        SEloop:
-        for (int i=rPos+1;i<_chessBoard.getBoardRows();i++){
-            for (int j=cPos+1;j<_chessBoard.getBoardCols();j++){
-                if ((board[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
-                    cellsCovered++;
-                    board[i][j].setCellType('+');
-                }
-                if (board[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
-                    break SEloop; // if we hit a piece stop
-                }
-            }
-        }
-        // check NW diagonal
-        NWloop:
-        for (int i=rPos-1;i>=0;i--){
-            for (int j=cPos-1;j>=0;j--){
-                if ((board[i][j].getCellType() == '*') && ((i-rPos)==(j-cPos))){
-                    cellsCovered++;
-                    board[i][j].setCellType('+');
-                }
-                if (board[i][j].containsPiece() && ((i-rPos)==(j-cPos))){
-                    break NWloop; // if we hit a piece stop
-                }
-            }
-        }
-        // check SW diagonal
-        SWloop:
-        for (int i=rPos+1;i<_chessBoard.getBoardRows();i++){
-            for (int j=cPos-1;j>=0;j--){
-                if ((board[i][j].getCellType() == '*') && (i+j==rPos+cPos)){
-                    cellsCovered++;
-                    board[i][j].setCellType('+');
-                }
-                if (board[i][j].containsPiece() && (i+j==rPos+cPos)){
-                    break SWloop; // if we hit a piece stop
-                }
-            }
-        }
-        return cellsCovered;
-    }
-
-    // get rid of duplicates by placing the stringified boards in a Set
-    // sets disallow duplicates
-    private int countUniqueSolutions(ArrayList<ChessBoard> boardArray){
-        String boardString = "";
-        Set<String> boardHashSet = new HashSet<>();
-        for (ChessBoard board: boardArray) {
-            for (int i = 0; i <board.getBoardRows(); i++) {
-                for (int j = 0; j < board.getBoardCols(); j++) {
-                    boardString = boardString + board.getChessBoardCell(i,j);
-                }
-            }
-            boardHashSet.add(boardString);
-            boardString = "";
-        }
-        return boardHashSet.size();
-    }
-
-
-    // logging method
-    // for boards with high execution time provides a larger insight into how the program runs.
-    public static void printLogMessage(String message){
-        System.out.print("[LOG] [T:" + ((System.nanoTime()-Main.startTime)/1000000) + " ms] \t");
-        System.out.println(message);
+        this._chessBoard.setCellType("*",rowToTest,colToTest);
+        analyzeBoard(iteration+1,usedQueens,usedBishops);
+        return;
     }
 }
 
-class CoverInfo{
-    int positionsCovered;
-    ChessPiece coveringPiece;
-
-    CoverInfo(int pC, ChessPiece cP){
-        positionsCovered = pC;
-        coveringPiece = cP;
+class SolutionFoundException extends Exception{
+    public SolutionFoundException(String message){
+        super(message);
     }
 }

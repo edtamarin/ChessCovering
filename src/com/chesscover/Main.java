@@ -13,22 +13,22 @@ public class Main {
         int numOfBishops;
         // get user input
         System.out.println("Enter the board dimensions (M*N):");
-        System.out.print("M: ");
+        System.out.print("M (rows): ");
         Scanner inputScanner = new Scanner(System.in);
         boardM = inputScanner.nextInt();
-        System.out.print("N: ");
+        System.out.print("N (cols): ");
         boardN = inputScanner.nextInt();
         System.out.println("Enter chesspiece data:");
         System.out.print("Number of Queens: ");
         numOfQueens = inputScanner.nextInt();
-        System.out.print("Number of Bishops (0 for automatic): ");
+        System.out.print("Number of Bishops (-1 for automatic): ");
         numOfBishops = inputScanner.nextInt();
         System.out.println("---------------");
         System.out.println("Search started.");
         // log starting time
         startTime = System.nanoTime();
         // run the algorithm
-        ChessManager gameManager = new ChessManager(boardM,boardN,numOfQueens,numOfBishops);
+        ChessManager gameManager = new ChessManager(numOfQueens,numOfBishops,boardM,boardN);
         gameManager.findSolutions();
         // log end time
         long endTime = System.nanoTime();
