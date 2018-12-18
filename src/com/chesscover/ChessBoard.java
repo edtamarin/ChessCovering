@@ -37,9 +37,18 @@ public class ChessBoard {
         return true;
     }
 
+    private void emptyBoard(){
+        for (int i=0;i<this._numRows;i++){
+            for (int j=0;j<this._numCols;j++){
+                if (!this.hasPiece(i,j)) this.setCellType("*",i,j);
+            }
+        }
+    }
+
     public void renderBoard(){
         ArrayList<ChessPiece> listOfPieces;
         listOfPieces = this.boardToListOfPieces(); // get the pieces on a board
+        this.emptyBoard();
         for (ChessPiece piece:listOfPieces) { // radiate from each piece
             // horizontals and verticals are only covered by queens
             if (piece.getPieceType().equals("Q")) {
@@ -180,7 +189,7 @@ public class ChessBoard {
         System.out.println();
     }
 
-    private boolean hasPiece(int row, int col){
+    public boolean hasPiece(int row, int col){
         if ((this._chessBoard[row][col].equals("Q")) || (this._chessBoard[row][col].equals("B"))) return true;
         return false;
     }
