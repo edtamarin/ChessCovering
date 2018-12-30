@@ -15,4 +15,4 @@ The program will output:
   * A valid board configuration, if found
   * The number of pieces placed
   * Time to solve
-  * **Optional:** if the program is finding the mimnum number of Bishops, logs will be displayed to notify user of the progress.
+  * **Optional:** if the program is finding the minimum number of Bishops, logs will be displayed to notify user of the progress.
