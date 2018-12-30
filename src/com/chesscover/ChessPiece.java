@@ -1,3 +1,8 @@
+/*
+    Data structure class
+    Provides a way to store information about chess pieces separate from the board
+    Egor Tamarin, 2018
+ */
 package com.chesscover;
 
 public class ChessPiece {

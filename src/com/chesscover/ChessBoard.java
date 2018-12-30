@@ -1,3 +1,8 @@
+/*
+    Helper class
+    Manages the chess board, providing information and rendering
+    Egor Tamarin, 2018
+ */
 package com.chesscover;
 
 import java.util.ArrayList;
@@ -19,6 +24,7 @@ public class ChessBoard {
         _numCols = cols;
     }
 
+    // overload constructor to allow for easy board copying
     public ChessBoard(ChessBoard board){
         this._numRows = board._numRows;
         this._numCols = board._numCols;
@@ -28,6 +34,7 @@ public class ChessBoard {
         }
     }
 
+    // check if the board is covered completely
     public boolean isFilled(){
         for (int i=0;i<this._numRows;i++){
             for (int j=0;j<this._numCols;j++){
@@ -37,18 +44,10 @@ public class ChessBoard {
         return true;
     }
 
-    private void emptyBoard(){
-        for (int i=0;i<this._numRows;i++){
-            for (int j=0;j<this._numCols;j++){
-                if (!this.hasPiece(i,j)) this.setCellType("*",i,j);
-            }
-        }
-    }
-
+    // For every piece on the board, check which cells it covers and mark them
     public void renderBoard(){
         ArrayList<ChessPiece> listOfPieces;
         listOfPieces = this.boardToListOfPieces(); // get the pieces on a board
-        this.emptyBoard();
         for (ChessPiece piece:listOfPieces) { // radiate from each piece
             // horizontals and verticals are only covered by queens
             if (piece.getPieceType().equals("Q")) {
@@ -59,6 +58,7 @@ public class ChessBoard {
         }
     }
 
+    // check left and right directions
     private void analyzeHorizontal(ChessPiece pieceToAnalyze){
         //check left
         for (int i = pieceToAnalyze.getPieceCol()-1; i>=0; i--){ // if cell empty increase number of attacks
@@ -90,6 +90,7 @@ public class ChessBoard {
         }
     }
 
+    // check diagonals
     private void analyzeDiagonal(ChessPiece pieceToAnalyze){
         //check NE diagonal
         loopNE: // label to break to
@@ -167,6 +168,7 @@ public class ChessBoard {
         return false;
     }
 
+    // scrape the board for the list of all pieces that are on it
     public ArrayList<ChessPiece> boardToListOfPieces(){
         ArrayList<ChessPiece> piecesOnBoard = new ArrayList<>();
         for (int i=0;i<this._numRows;i++){
@@ -179,6 +181,7 @@ public class ChessBoard {
         return piecesOnBoard;
     }
 
+    // print the board to terminal
     public void printBoard(){
         for (int i=0;i<this._numRows;i++){
             for(int j=0;j<this._numCols;j++){
@@ -189,15 +192,17 @@ public class ChessBoard {
         System.out.println();
     }
 
+    // check if a cell is occupied by a piece
     public boolean hasPiece(int row, int col){
         if ((this._chessBoard[row][col].equals("Q")) || (this._chessBoard[row][col].equals("B"))) return true;
         return false;
     }
 
+    // get the number of Bs that are on the board
     public int getNumOfBishops(){
         int result = 0;
-        ArrayList<ChessPiece> piecesonBoard = this.boardToListOfPieces();
-        for (ChessPiece piece:piecesonBoard) {
+        ArrayList<ChessPiece> piecesOnBoard = this.boardToListOfPieces();
+        for (ChessPiece piece:piecesOnBoard) {
             if (piece.getPieceType().equals("B")){
                 result++;
             }

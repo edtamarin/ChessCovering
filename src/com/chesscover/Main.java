@@ -5,7 +5,6 @@ import java.util.Scanner;
 public class Main {
 
     static long startTime;
-
     public static void main(String[] args) {
         int boardM;
         int boardN;
