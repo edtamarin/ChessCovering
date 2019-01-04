@@ -50,25 +50,25 @@ public class ChessManager {
             printLogMessage("A solution for " + _numBishops + " bishops found.");
         }
         System.out.println("---------------");
-        // notify user if there are no solutions for a picked configuration
-        if (listOfPossibleSolutions.size() == 0) {
-            System.out.println("No valid solution found!");
-            System.out.println("Change chesspiece data and try again.");
-            return -1;
-        }
         // filter the results
         ArrayList<ChessBoard> finalArray = new ArrayList<>();
         if (solutionMode == 0) {
             // for automatic mode, the filtering is done in the analysis stage, not necessary here
             finalArray = listOfPossibleSolutions;
         } else {
-            // if number of Qs and Bs provided, there might be solutions with a different number of Bs in the list
+            // if number of Qs and Bs provided, there might be solutions with a different number of Bs/Qs in the list
             // discard those
             for (ChessBoard board : listOfPossibleSolutions) {
-                if (board.getNumOfBishops() == _numBishops) {
+                if ((board.getNumOfBishops() == _numBishops) && (board.getNumOfQueens() == _numQueens)){
                     finalArray.add(board);
                 }
             }
+        }
+        // notify user if there are no solutions for a picked configuration
+        if (finalArray.size() == 0) {
+            System.out.println("No valid solution found!");
+            System.out.println("Change chesspiece data and try again.");
+            return -1;
         }
         // pick a board from the solution set at random to display it
         int boardIndex = _numberGenerator.nextInt(finalArray.size());

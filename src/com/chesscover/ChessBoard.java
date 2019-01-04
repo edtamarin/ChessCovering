@@ -210,6 +210,17 @@ public class ChessBoard {
         return result;
     }
 
+    public int getNumOfQueens(){
+        int result = 0;
+        ArrayList<ChessPiece> piecesOnBoard = this.boardToListOfPieces();
+        for (ChessPiece piece:piecesOnBoard) {
+            if (piece.getPieceType().equals("Q")){
+                result++;
+            }
+        }
+        return result;
+    }
+
     public int getNumRows() {
         return _numRows;
     }
