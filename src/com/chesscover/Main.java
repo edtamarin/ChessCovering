@@ -13,16 +13,11 @@ public class Main {
         // get user input
         System.out.println();
         System.out.println("Enter the board dimensions (M*N):");
-        System.out.print("Number of rows: ");
-        Scanner inputScanner = new Scanner(System.in);
-        boardM = inputScanner.nextInt();
-        System.out.print("Number of columns: ");
-        boardN = inputScanner.nextInt();
+        boardM = getUserInput("Number of rows: ",1);
+        boardN = getUserInput("Number of columns: ",1);
         System.out.println("Enter chesspiece data:");
-        System.out.print("Number of Queens: ");
-        numOfQueens = inputScanner.nextInt();
-        System.out.print("Number of Bishops (-1 for automatic): ");
-        numOfBishops = inputScanner.nextInt();
+        numOfQueens = getUserInput("Number of Queens: ",0);
+        numOfBishops = getUserInput("Number of Bishops (-1 for automatic): ",-1);
         System.out.println("---------------");
         System.out.println("Search started.");
         // log starting time
@@ -35,5 +30,21 @@ public class Main {
         // print time statistics
         System.out.println("---------------");
         System.out.println("Done! Finished in " + (endTime-startTime)/1000000 + " ms.");
+    }
+
+    // get user input and sanitize it
+    private static int getUserInput(String message,int minBoundary){
+        System.out.print(message);
+        Scanner inputScan = new Scanner(System.in);
+        int result;
+        do{
+            while(!inputScan.hasNextInt()){
+                System.out.println("Not a number! Please try again.");
+                inputScan.next();
+            }
+            result = inputScan.nextInt();
+            if (result<minBoundary) System.out.println("Please enter a value larger or equal than " + minBoundary);
+        }while(result < minBoundary);
+        return result;
     }
 }
